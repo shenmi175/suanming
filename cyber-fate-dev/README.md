@@ -9,14 +9,15 @@
 - Next.js App Router + TypeScript + Tailwind CSS。
 - 访谈式 intake 页面，使用 React Hook Form + Zod 校验。
 - 生成进度页，展示 Interviewer / Researcher / Fusion / Copywriter / Reviewer 五个步骤。
-- mock pipeline：无 `OPENAI_API_KEY` 也能生成完整报告。
+- PerceptLeap API 多角色管线：Interviewer / Researcher / Fusion / Copywriter / Reviewer 生成结构化报告，可选 Image Director 生成封面图提示词与图像。
+- 本地备用管线：无 API key 或 API 调用失败时仍能生成完整报告。
 - 基础命理 signal：星座、生肖公历近似、五行规则侧写、稳定易经 seed、风水取象。
 - 本地知识库读取：`content/metaphysics/*.md`。
 - 印章系统：按模块与关注领域选择印章。
 - 报告预览页：`/report/[id]`。
 - 打印页：`/report/[id]/print`。
 - PDF 下载接口：`/api/reports/[id]/pdf`，使用 Playwright；若 Playwright 浏览器未安装，会尝试本机 Chrome/Edge。
-- 测试覆盖核心 schema、signals、mock pipeline、印章与 PDF HTML renderer。
+- 测试覆盖核心 schema、signals、本地备用管线、PerceptLeap JSON 解析、印章与 PDF HTML renderer。
 
 ## 本地启动
 
@@ -171,18 +172,57 @@ OPENAI_MODEL_COPYWRITER=
 OPENAI_MODEL_REVIEWER=
 CYBER_FATE_LLM_MODE=mock
 ENABLE_OPENAI=false
+PERCEPTLEAP_API_KEY=
+PERCEPTLEAP_BASE_URL=https://api.perceptleap.com/v1
+PERCEPTLEAP_TEXT_MODEL=gpt-5.4
+PERCEPTLEAP_IMAGE_MODEL=gpt-image-2
+PERCEPTLEAP_IMAGE_SIZE=1024x1024
+PERCEPTLEAP_IMAGE_QUALITY=low
+ENABLE_PERCEPTLEAP=false
+ENABLE_PERCEPTLEAP_IMAGE=false
+PERCEPTLEAP_PROXY_URL=
 ENABLE_WEB_SEARCH=false
 OPENAI_VECTOR_STORE_ID=
 APP_BASE_URL=http://localhost:3000
 ```
 
-## mock / OpenAI 模式切换
+## 生成模式切换
 
-默认是 mock mode：
+默认是本地备用模式：
 
 ```env
 ENABLE_OPENAI=false
+ENABLE_PERCEPTLEAP=false
 CYBER_FATE_LLM_MODE=mock
+```
+
+启用 PerceptLeap API 多角色模式：
+
+```env
+CYBER_FATE_LLM_MODE=perceptleap
+ENABLE_PERCEPTLEAP=true
+PERCEPTLEAP_API_KEY=sk-...
+PERCEPTLEAP_TEXT_MODEL=gpt-5.4
+```
+
+启用 PerceptLeap 图像生成：
+
+```env
+ENABLE_PERCEPTLEAP_IMAGE=true
+PERCEPTLEAP_IMAGE_MODEL=gpt-image-2
+PERCEPTLEAP_IMAGE_QUALITY=low
+```
+
+如果本机或虚拟机需要代理，优先设置专用代理变量：
+
+```env
+PERCEPTLEAP_PROXY_URL=http://127.0.0.1:10809
+```
+
+Docker 内访问宿主机代理时通常使用：
+
+```env
+PERCEPTLEAP_PROXY_URL=http://host.docker.internal:10809
 ```
 
 启用 OpenAI Agents SDK 模式：
@@ -203,7 +243,7 @@ OPENAI_API_KEY=sk-...
 OPENAI_MODEL_COPYWRITER=gpt-4.1-mini
 ```
 
-如果 OpenAI 调用失败，API 会自动降级到 mock pipeline，并在报告 reviewer issues 中记录原因。
+如果 PerceptLeap 或 OpenAI 调用失败，API 会自动降级到本地备用管线，并在报告 reviewer issues 中记录原因。
 
 ## 本地存储限制
 
@@ -224,7 +264,7 @@ src/lib/fate/               星座、生肖、五行、易象、风水、印章
 src/lib/research/           本地知识库读取
 src/lib/report/             report schema、构建器、存储
 src/lib/agents/             Agents SDK 定义与 pipeline 入口
-src/lib/llm/                OpenAI client、模型配置、mock pipeline
+src/lib/llm/                PerceptLeap/OpenAI client、模型配置、本地备用 pipeline
 src/lib/pdf/                HTML renderer 与 Playwright PDF
 content/metaphysics/        本地玄学知识库
 tests/                      Vitest 测试
@@ -235,4 +275,4 @@ tests/                      Vitest 测试
 - 生肖按公历年份近似，未处理农历新年/立春边界。
 - 五行是象征性规则侧写，不是专业八字排盘。
 - 风水建议在没有户型图、坐向与现场测量时只做空间取象。
-- OpenAI mode 已保留官方 SDK/Agents SDK 接入点，但 mock mode 是第一版稳定演示路径。
+- PerceptLeap mode 负责真实文本/可选图像生成；OpenAI mode 保留官方 SDK/Agents SDK 接入点；本地备用管线用于离线演示和失败降级。

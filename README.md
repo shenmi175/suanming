@@ -178,9 +178,25 @@ $env:APP_PORT=3001
 docker compose up --build
 ```
 
-## OpenAI 模式
+## API 生成模式
 
-默认是 mock 模式，不需要 API key。
+默认是本地备用模式，不需要 API key。
+
+启用 PerceptLeap：
+
+```powershell
+$env:CYBER_FATE_LLM_MODE="perceptleap"
+$env:ENABLE_PERCEPTLEAP="true"
+$env:PERCEPTLEAP_API_KEY="sk-..."
+$env:PERCEPTLEAP_PROXY_URL="http://host.docker.internal:10809"
+docker compose up --build
+```
+
+如需同时生成封面图：
+
+```powershell
+$env:ENABLE_PERCEPTLEAP_IMAGE="true"
+```
 
 如要启用 OpenAI：
 

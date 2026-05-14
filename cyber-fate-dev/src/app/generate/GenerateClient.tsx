@@ -58,7 +58,7 @@ export function GenerateClient() {
         <p className="text-sm uppercase tracking-[0.28em] text-aurora">Pipeline</p>
         <h1 className="mt-5 font-serif text-5xl">生成命运白皮书</h1>
         <p className="mt-4 max-w-2xl leading-8 text-bone">
-          当前流程按五个 agent 步骤展示。没有 OpenAI key 时，系统会自动使用本地 mock pipeline，但仍会生成完整报告与 PDF。
+          当前流程按访谈、检索、融合、写作、审阅五个角色展示。API 不可用时会自动使用本地备用管线，仍会生成完整报告与 PDF。
         </p>
         <div className="mt-8">
           <Progress value={progress} />

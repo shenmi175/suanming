@@ -12,7 +12,7 @@ export default function IntakePage() {
           </p>
           <div className="mt-8 border-l border-cinnabar pl-5 text-sm leading-7 text-bone">
             <p>仅供娱乐，不作为现实决策依据。</p>
-            <p>默认 mock 模式可离线生成完整样例报告。</p>
+            <p>API 不可用时会自动切到本地备用生成，确保预览和 PDF 可用。</p>
           </div>
         </div>
         <IntakeForm />

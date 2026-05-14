@@ -12,6 +12,26 @@ export async function runCyberFatePipeline(profile: IntakeProfile): Promise<{
 }> {
   const mode = getEffectiveLlmMode();
 
+  if (mode === "perceptleap") {
+    try {
+      const { runPerceptLeapPipeline } = await import("@/lib/llm/perceptLeapPipeline");
+      const result = await runPerceptLeapPipeline(profile);
+      return {
+        mode: result.mode,
+        report: CyberFateReportSchema.parse(result.report),
+        artifacts: result.artifacts,
+      };
+    } catch (error) {
+      const fallback = await runMockPipeline(profile);
+      fallback.report.reviewer.issues.push({
+        severity: "medium",
+        message: "PerceptLeap API 模式失败，已自动降级到本地备用管线。",
+        suggestedFix: error instanceof Error ? error.message : "检查 PERCEPTLEAP_API_KEY、代理、模型名与响应 JSON。",
+      });
+      return fallback;
+    }
+  }
+
   if (mode === "openai-agents") {
     try {
       const { runOpenAIAgentsPipeline } = await import("./cyberFateAgents");
@@ -25,7 +45,7 @@ export async function runCyberFatePipeline(profile: IntakeProfile): Promise<{
       const fallback = await runMockPipeline(profile);
       fallback.report.reviewer.issues.push({
         severity: "medium",
-        message: "OpenAI Agents 模式失败，已自动降级到 mock pipeline。",
+        message: "OpenAI Agents 模式失败，已自动降级到本地备用管线。",
         suggestedFix: error instanceof Error ? error.message : "检查 OPENAI_API_KEY、模型名与 @openai/agents 配置。",
       });
       return fallback;
@@ -66,7 +86,7 @@ export async function runCyberFatePipeline(profile: IntakeProfile): Promise<{
       const fallback = await runMockPipeline(profile);
       fallback.report.reviewer.issues.push({
         severity: "medium",
-        message: "OpenAI Direct 模式失败，已自动降级到 mock pipeline。",
+        message: "OpenAI Direct 模式失败，已自动降级到本地备用管线。",
         suggestedFix: error instanceof Error ? error.message : "检查 OPENAI_API_KEY 与模型结构化输出支持。",
       });
       return fallback;

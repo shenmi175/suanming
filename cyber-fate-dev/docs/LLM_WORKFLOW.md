@@ -5,12 +5,13 @@
 入口：`src/lib/agents/runCyberFatePipeline.ts`
 
 ```text
-ENABLE_OPENAI=false 或缺少 OPENAI_API_KEY -> mock
+CYBER_FATE_LLM_MODE=perceptleap + ENABLE_PERCEPTLEAP=true + PERCEPTLEAP_API_KEY -> PerceptLeap Responses API
 ENABLE_OPENAI=true + CYBER_FATE_LLM_MODE=openai-agents -> @openai/agents
 ENABLE_OPENAI=true + CYBER_FATE_LLM_MODE=openai-direct -> OpenAI Responses Structured Output
+缺少可用 API key 或 API 调用失败 -> 本地备用管线
 ```
 
-任何 OpenAI 调用失败都会降级到 mock pipeline，并把错误写入 report reviewer issues。
+任何 PerceptLeap/OpenAI 调用失败都会降级到本地备用管线，并把错误写入 report reviewer issues。
 
 ## 角色输入输出
 
@@ -25,8 +26,9 @@ src/lib/agents/schemas.ts
 - Interviewer：输入 `IntakeProfile`，输出 profile、missingFields、userThemes、readyForReport。
 - Researcher：输入 profile + calculatedSignals，输出 `ResearchNote[]`。
 - Fusion Analyst：输入 profile + signals + notes，输出 sectionBlueprints、conflicts、uncertaintyNotes。
-- Copywriter：输出结构化报告草稿；第一版 mock builder 直接生成 `CyberFateReport`。
+- Copywriter：输出结构化报告草稿；PerceptLeap 模式会生成完整中文报告 JSON。
 - Reviewer：输出 passed、renderReady、issues、requiredRevisions。
+- Image Director：PerceptLeap 模式生成封面图提示词；`ENABLE_PERCEPTLEAP_IMAGE=true` 时调用 `gpt-image-2` 生成图像。
 
 ## 本地知识库
 
@@ -56,7 +58,7 @@ OPENAI_VECTOR_STORE_ID=
 ## 安全边界
 
 - API key 只在服务端读取。
-- 浏览器不直接调用 OpenAI。
+- 浏览器不直接调用 PerceptLeap/OpenAI。
 - 模型输出必须经过 Zod parse。
 - PDF renderer 只消费 validated report JSON。
 - 报告中必须包含娱乐声明与不确定性说明。

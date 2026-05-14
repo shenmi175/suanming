@@ -5,14 +5,15 @@ import { selectStamps } from "@/lib/fate/stamps";
 import { searchLocalKnowledge } from "@/lib/research/localKnowledge";
 import { CyberFateReportSchema, type CyberFateReport, type ReportChapter } from "./reportSchema";
 
-const entertainmentNotice = "本报告为赛博玄学娱乐内容，仅供自我观察与灵感参考，不作为医学、法律、投资或人生重大决策依据。";
+export const entertainmentNotice =
+  "本报告为赛博玄学娱乐内容，仅供自我观察与灵感参考，不作为医学、法律、投资或人生重大决策依据。";
 
-function createReportId() {
+export function createReportId() {
   const random = Math.random().toString(36).slice(2, 8).toUpperCase();
   return `CF-${format(new Date(), "yyyyMMdd-HHmmss")}-${random}`;
 }
 
-function uncertaintyNotes(profile: IntakeProfile) {
+export function buildUncertaintyNotes(profile: IntakeProfile) {
   const notes: string[] = [];
   if (profile.birthTimeStatus !== "known") notes.push("出生时间未精确确认，时辰与高精度排盘相关内容已降级处理。");
   if (!profile.birthPlace) notes.push("未提供出生地，地域与时区相关信息只做默认处理。");
@@ -132,7 +133,7 @@ export function buildCyberFateReport(profile: IntakeProfile, id = createReportId
     limit: 8,
   });
   const stamps = selectStamps({ focusAreas: profile.focusAreas, reviewerPassed: true });
-  const uncertainties = uncertaintyNotes(profile);
+  const uncertainties = buildUncertaintyNotes(profile);
   const generatedAt = new Date().toISOString();
 
   const chapters: ReportChapter[] = [

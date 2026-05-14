@@ -7,7 +7,7 @@ export function getOpenAIClient() {
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    throw new Error("Missing OPENAI_API_KEY. Set ENABLE_OPENAI=false to use mock mode.");
+    throw new Error("Missing OPENAI_API_KEY. Set ENABLE_OPENAI=false to use the local fallback pipeline.");
   }
 
   cachedClient = new OpenAI({ apiKey });

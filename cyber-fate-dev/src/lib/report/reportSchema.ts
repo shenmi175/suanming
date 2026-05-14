@@ -25,6 +25,14 @@ export const ReportStampSchema = z.object({
   intensity: StampIntensitySchema,
 });
 
+export const ReportCoverImageSchema = z.object({
+  prompt: z.string(),
+  altText: z.string(),
+  dataUrl: z.string().optional(),
+  model: z.string().optional(),
+  createdAt: z.string().optional(),
+});
+
 export const CyberFateReportSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -60,6 +68,7 @@ export const CyberFateReportSchema = z.object({
     fengshuiThemes: z.array(z.string()).optional(),
   }),
   executiveSummary: z.string(),
+  coverImage: ReportCoverImageSchema.optional(),
   chapters: z.array(ReportChapterSchema).min(6),
   stamps: z.array(ReportStampSchema).min(1),
   reviewer: z.object({
@@ -83,3 +92,4 @@ export const CyberFateReportSchema = z.object({
 export type CyberFateReport = z.infer<typeof CyberFateReportSchema>;
 export type ReportChapter = z.infer<typeof ReportChapterSchema>;
 export type ReportStamp = z.infer<typeof ReportStampSchema>;
+export type ReportCoverImage = z.infer<typeof ReportCoverImageSchema>;

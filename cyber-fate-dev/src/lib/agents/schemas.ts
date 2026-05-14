@@ -70,6 +70,12 @@ export const ReviewOutputSchema = z.object({
   requiredRevisions: z.array(z.string()).default([]),
 });
 
+export const VisualPromptOutputSchema = z.object({
+  prompt: z.string(),
+  altText: z.string(),
+  usageNotes: z.array(z.string()).default([]),
+});
+
 export type CalculatedSignal = z.infer<typeof CalculatedSignalSchema>;
 export type ResearchNote = z.infer<typeof ResearchNoteSchema>;
 export type InterviewOutput = z.infer<typeof InterviewOutputSchema>;
@@ -77,3 +83,4 @@ export type ResearchOutput = z.infer<typeof ResearchOutputSchema>;
 export type FusionOutput = z.infer<typeof FusionOutputSchema>;
 export type CopywriterOutput = z.infer<typeof CopywriterOutputSchema>;
 export type ReviewOutput = z.infer<typeof ReviewOutputSchema>;
+export type VisualPromptOutput = z.infer<typeof VisualPromptOutputSchema>;

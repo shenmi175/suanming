@@ -31,7 +31,7 @@ export default function HomePage() {
               <span className="block text-cinnabar">赛博天命局</span>
             </h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-bone md:text-xl">
-              输入昵称、出生信息、当前城市、关心领域与问题，生成一份赛博东方玄学风格的命运白皮书。无 API key 也能用 mock 模式完成报告与 PDF。
+              输入昵称、出生信息、当前城市、关心领域与问题，由多角色 API 管线生成一份赛博东方玄学风格的命运白皮书，并保留本地备用生成与 PDF 闭环。
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link href="/intake">

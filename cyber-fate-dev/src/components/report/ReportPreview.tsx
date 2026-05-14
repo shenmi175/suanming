@@ -1,4 +1,5 @@
 import { Download, Printer } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import type { CyberFateReport } from "@/lib/report/reportSchema";
 import { Seal } from "./Seal";
@@ -71,6 +72,18 @@ export function ReportPreview({ report }: { report: CyberFateReport }) {
             <p className="text-sm text-cinnabar">总览</p>
             <h2 className="mt-2 font-serif text-4xl">正在发光的参数</h2>
             <p className="mt-4 max-w-3xl text-lg leading-8 text-ink/78">{report.executiveSummary}</p>
+            {report.coverImage?.dataUrl ? (
+              <div className="mt-6 overflow-hidden rounded-[8px] border border-ink/10 bg-ink">
+                <Image
+                  src={report.coverImage.dataUrl}
+                  alt={report.coverImage.altText}
+                  width={1024}
+                  height={1024}
+                  unoptimized
+                  className="aspect-square w-full object-cover"
+                />
+              </div>
+            ) : null}
           </section>
 
           {report.chapters.map((chapter) => (

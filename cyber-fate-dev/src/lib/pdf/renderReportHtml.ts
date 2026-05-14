@@ -188,6 +188,13 @@ export function renderReportHtml(report: CyberFateReport) {
       max-width: 140mm;
       margin-top: 8mm;
     }
+    .cover-art {
+      width: 74mm;
+      height: 74mm;
+      margin-top: 10mm;
+      border: 1px solid rgba(46,230,166,.32);
+      object-fit: cover;
+    }
   </style>
 </head>
 <body>
@@ -195,6 +202,11 @@ export function renderReportHtml(report: CyberFateReport) {
     <p class="kicker">Cyber Fate / 赛博天命局</p>
     <h1>${escapeHtml(report.subtitle)}</h1>
     <p class="summary">${escapeHtml(report.executiveSummary)}</p>
+    ${
+      report.coverImage?.dataUrl
+        ? `<img class="cover-art" src="${escapeHtml(report.coverImage.dataUrl)}" alt="${escapeHtml(report.coverImage.altText)}" />`
+        : ""
+    }
     <p class="notice">${escapeHtml(report.entertainmentNotice)}</p>
     <div class="cover-meta">
       <p>天机编号<br />${escapeHtml(report.id)}</p>

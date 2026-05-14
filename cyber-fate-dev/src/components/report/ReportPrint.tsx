@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { CyberFateReport } from "@/lib/report/reportSchema";
 import { Seal } from "./Seal";
 
@@ -8,6 +9,18 @@ export function ReportPrint({ report }: { report: CyberFateReport }) {
         <p className="text-xs uppercase tracking-[0.32em] text-cinnabar">Cyber Fate / 赛博天命局</p>
         <h1 className="mt-12 font-serif text-6xl leading-tight">{report.subtitle}</h1>
         <p className="mt-8 max-w-2xl text-xl leading-9">{report.executiveSummary}</p>
+        {report.coverImage?.dataUrl ? (
+          <div className="mt-10 w-[360px] overflow-hidden border border-ink/15">
+            <Image
+              src={report.coverImage.dataUrl}
+              alt={report.coverImage.altText}
+              width={1024}
+              height={1024}
+              unoptimized
+              className="aspect-square w-full object-cover"
+            />
+          </div>
+        ) : null}
         <div className="mt-12 flex gap-6">
           {report.stamps.slice(0, 4).map((stamp) => (
             <Seal key={stamp.id} label={stamp.label} intensity={stamp.intensity} />
