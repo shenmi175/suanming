@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ResearchNote",
+  "type": "object",
+  "required": [
+    "id",
+    "system",
+    "topic",
+    "claim",
+    "interpretiveUse",
+    "source"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "system": {
+      "type": "string"
+    },
+    "topic": {
+      "type": "string"
+    },
+    "claim": {
+      "type": "string"
+    },
+    "interpretiveUse": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ]
+    }
+  }
+}

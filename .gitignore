@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+cyber-fate-dev/node_modules/
+
+# Next.js / build output
+.next/
+cyber-fate-dev/.next/
+out/
+dist/
+coverage/
+
+# Local runtime data
+.cyber-fate-data/
+cyber-fate-dev/.cyber-fate-data/
+*.log
+cyber-fate-dev/.next-dev.log
+cyber-fate-dev/.next-dev.err.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+cyber-fate-dev/.env
+cyber-fate-dev/.env.local
+cyber-fate-dev/.env.*.local
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Package manager caches
+.pnpm-store/
+.yarn/

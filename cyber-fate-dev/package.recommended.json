@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "openai": "latest",
+    "@openai/agents": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "vitest": "latest",
+    "@playwright/test": "latest",
+    "playwright": "latest",
+    "tsx": "latest",
+    "typescript": "latest"
+  },
+  "notes": "This is not a package.json. It lists recommended mature dependencies for Codex to install in the actual project."
+}

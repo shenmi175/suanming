@@ -1,0 +1,48 @@
+name: cyber-fate
+
+services:
+  app:
+    build:
+      context: ./cyber-fate-dev
+      dockerfile: "${DOCKERFILE:-Dockerfile}"
+      extra_hosts:
+        - "host.docker.internal:host-gateway"
+      args:
+        HTTP_PROXY: "${HTTP_PROXY:-}"
+        HTTPS_PROXY: "${HTTPS_PROXY:-}"
+        NO_PROXY: "${NO_PROXY:-localhost,127.0.0.1,::1}"
+        http_proxy: "${http_proxy:-}"
+        https_proxy: "${https_proxy:-}"
+        no_proxy: "${no_proxy:-localhost,127.0.0.1,::1}"
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      APP_BASE_URL: "http://localhost:${APP_PORT:-3000}"
+      ENABLE_OPENAI: "${ENABLE_OPENAI:-false}"
+      CYBER_FATE_LLM_MODE: "${CYBER_FATE_LLM_MODE:-mock}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      OPENAI_MODEL_DEFAULT: "${OPENAI_MODEL_DEFAULT:-}"
+      OPENAI_MODEL_INTERVIEWER: "${OPENAI_MODEL_INTERVIEWER:-}"
+      OPENAI_MODEL_RESEARCHER: "${OPENAI_MODEL_RESEARCHER:-}"
+      OPENAI_MODEL_FUSION: "${OPENAI_MODEL_FUSION:-}"
+      OPENAI_MODEL_COPYWRITER: "${OPENAI_MODEL_COPYWRITER:-}"
+      OPENAI_MODEL_REVIEWER: "${OPENAI_MODEL_REVIEWER:-}"
+      ENABLE_WEB_SEARCH: "${ENABLE_WEB_SEARCH:-false}"
+      OPENAI_VECTOR_STORE_ID: "${OPENAI_VECTOR_STORE_ID:-}"
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      HTTP_PROXY: "${HTTP_PROXY:-}"
+      HTTPS_PROXY: "${HTTPS_PROXY:-}"
+      NO_PROXY: "${NO_PROXY:-localhost,127.0.0.1,::1}"
+      http_proxy: "${http_proxy:-}"
+      https_proxy: "${https_proxy:-}"
+      no_proxy: "${no_proxy:-localhost,127.0.0.1,::1}"
+    volumes:
+      - cyber_fate_reports:/app/.cyber-fate-data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+volumes:
+  cyber_fate_reports:

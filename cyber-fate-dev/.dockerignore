@@ -1,0 +1,13 @@
+node_modules
+.next
+.cyber-fate-data
+.next-dev.log
+.next-dev.err.log
+.env
+.env.local
+.env.*.local
+coverage
+dist
+Dockerfile
+*.log
+README_DOCKER.md

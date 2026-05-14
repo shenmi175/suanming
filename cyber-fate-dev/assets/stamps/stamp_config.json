@@ -1,0 +1,50 @@
+[
+  {
+    "id": "tianji-initial",
+    "label": "天机初判印",
+    "domain": "overall",
+    "trigger": "report_generated",
+    "assetPath": "/stamps/tianji-initial.svg",
+    "meaning": "报告结构生成完成。"
+  },
+  {
+    "id": "wuxing-joined",
+    "label": "五行参合印",
+    "domain": "wuxing",
+    "trigger": "wuxing_signal_present",
+    "assetPath": "/stamps/wuxing-joined.svg",
+    "meaning": "五行模块参与解读。"
+  },
+  {
+    "id": "stars-checked",
+    "label": "星盘校验印",
+    "domain": "stars",
+    "trigger": "star_signal_present",
+    "assetPath": "/stamps/stars-checked.svg",
+    "meaning": "星座/生肖/星辰时间模块参与解读。"
+  },
+  {
+    "id": "iching-revealed",
+    "label": "易象启示印",
+    "domain": "iching",
+    "trigger": "iching_signal_present",
+    "assetPath": "/stamps/iching-revealed.svg",
+    "meaning": "易象模块参与解读。"
+  },
+  {
+    "id": "fengshui-symbol",
+    "label": "风水取象印",
+    "domain": "fengshui",
+    "trigger": "fengshui_chapter_present",
+    "assetPath": "/stamps/fengshui-symbol.svg",
+    "meaning": "空间建议已生成，且注明取象限制。"
+  },
+  {
+    "id": "review-clear",
+    "label": "审阅无冲印",
+    "domain": "review",
+    "trigger": "reviewer_passed_without_blocker",
+    "assetPath": "/stamps/review-clear.svg",
+    "meaning": "Reviewer 未发现阻断问题。"
+  }
+]

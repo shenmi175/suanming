@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CyberFateReport",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "generatedAt",
+    "entertainmentNotice",
+    "profileSummary",
+    "chapters",
+    "stamps",
+    "appendix"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "generatedAt": {
+      "type": "string"
+    },
+    "entertainmentNotice": {
+      "type": "string"
+    },
+    "profileSummary": {
+      "type": "object"
+    },
+    "chapters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "summary",
+          "body"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "stampIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "stamps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "domain",
+          "reason"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "assetPath": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "appendix": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}

@@ -1,0 +1,71 @@
+FROM ubuntu:22.04 AS base
+
+WORKDIR /app
+
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ARG NO_PROXY
+ARG http_proxy
+ARG https_proxy
+ARG no_proxy
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV CI=1
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV HTTP_PROXY=${HTTP_PROXY}
+ENV HTTPS_PROXY=${HTTPS_PROXY}
+ENV NO_PROXY=${NO_PROXY}
+ENV http_proxy=${http_proxy}
+ENV https_proxy=${https_proxy}
+ENV no_proxy=${no_proxy}
+ENV npm_config_proxy=${HTTP_PROXY}
+ENV npm_config_https_proxy=${HTTPS_PROXY}
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates curl gnupg xz-utils \
+  && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+  && apt-get install -y --no-install-recommends nodejs \
+  && if [ -n "$HTTP_PROXY" ]; then npm config set proxy "$HTTP_PROXY"; fi \
+  && if [ -n "$HTTPS_PROXY" ]; then npm config set https-proxy "$HTTPS_PROXY"; fi \
+  && npm install -g pnpm@11.0.9 \
+  && rm -rf /var/lib/apt/lists/*
+
+FROM base AS deps
+
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+RUN pnpm install --frozen-lockfile
+
+FROM base AS builder
+
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+RUN pnpm build
+
+FROM base AS runner
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV ENABLE_OPENAI=false
+ENV CYBER_FATE_LLM_MODE=mock
+ENV APP_BASE_URL=http://localhost:3000
+
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/content ./content
+COPY --from=builder /app/next.config.mjs ./next.config.mjs
+
+RUN pnpm exec playwright install --with-deps chromium \
+  && mkdir -p /app/.cyber-fate-data/reports
+
+EXPOSE 3000
+
+CMD ["node_modules/.bin/next", "start", "-H", "0.0.0.0", "-p", "3000"]

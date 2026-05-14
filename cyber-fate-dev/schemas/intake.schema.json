@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IntakeProfile",
+  "type": "object",
+  "required": [
+    "displayName",
+    "birthDate",
+    "birthTimeStatus",
+    "focusAreas",
+    "reportTone"
+  ],
+  "properties": {
+    "displayName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "birthDate": {
+      "type": "string",
+      "description": "YYYY-MM-DD"
+    },
+    "birthTime": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "HH:mm or traditional hour branch"
+    },
+    "birthTimeStatus": {
+      "type": "string",
+      "enum": [
+        "known",
+        "approximate",
+        "unknown"
+      ]
+    },
+    "birthTimezone": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "birthplace": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "currentCity": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "focusAreas": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "career",
+          "wealth",
+          "love",
+          "relationships",
+          "family",
+          "study",
+          "fengshui",
+          "yearTheme"
+        ]
+      }
+    },
+    "reportTone": {
+      "type": "string",
+      "enum": [
+        "cyber",
+        "classical",
+        "gentle",
+        "sharp",
+        "academic",
+        "mystic"
+      ]
+    },
+    "currentQuestion": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

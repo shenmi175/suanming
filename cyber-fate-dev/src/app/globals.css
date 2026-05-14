@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --font-sans: "Inter";
+  --font-serif: "Noto Serif SC";
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: #080705;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  background:
+    linear-gradient(90deg, rgba(216, 168, 66, 0.06) 1px, transparent 1px),
+    linear-gradient(rgba(216, 168, 66, 0.04) 1px, transparent 1px),
+    #080705;
+  background-size: 36px 36px;
+  color: #f2ebdd;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(46, 230, 166, 0.3);
+}
+
+.oracle-grid {
+  background-image:
+    linear-gradient(rgba(46, 230, 166, 0.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(46, 230, 166, 0.11) 1px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(circle at 50% 50%, #000 0 40%, transparent 72%);
+}
+
+.scanline {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanline::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(242, 235, 221, 0.06),
+    rgba(242, 235, 221, 0.06) 1px,
+    transparent 1px,
+    transparent 7px
+  );
+  mix-blend-mode: screen;
+}
+
+.seal-border {
+  border: 1px solid rgba(213, 68, 47, 0.68);
+  box-shadow: inset 0 0 0 1px rgba(213, 68, 47, 0.25), 0 0 30px rgba(213, 68, 47, 0.12);
+}
+
+@media print {
+  html,
+  body {
+    background: #f7f0e3;
+    color: #170f0b;
+  }
+}
