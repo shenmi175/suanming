@@ -246,10 +246,10 @@ start_app() {
   echo ""
 
   if [[ "$MODE" == "development" ]]; then
-    pnpm dev -- -H 0.0.0.0 -p "$PORT"
+    ./node_modules/.bin/next dev -H 0.0.0.0 -p "$PORT"
   else
     pnpm build
-    pnpm start -- -H 0.0.0.0 -p "$PORT"
+    ./node_modules/.bin/next start -H 0.0.0.0 -p "$PORT"
   fi
 }
 
