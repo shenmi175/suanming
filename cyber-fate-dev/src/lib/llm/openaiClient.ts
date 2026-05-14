@@ -7,7 +7,7 @@ export function getOpenAIClient() {
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    throw new Error("Missing OPENAI_API_KEY. Set ENABLE_OPENAI=false to use the local fallback pipeline.");
+    throw new Error("Missing OPENAI_API_KEY. openai-direct mode requires a model API key.");
   }
 
   cachedClient = new OpenAI({ apiKey });

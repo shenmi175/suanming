@@ -8,11 +8,11 @@ export default function IntakePage() {
           <p className="text-sm uppercase tracking-[0.28em] text-aurora">Intake</p>
           <h1 className="mt-5 font-serif text-5xl leading-tight md:text-6xl">访谈式输入</h1>
           <p className="mt-5 max-w-md leading-8 text-bone">
-            不需要一次性给出完整命盘信息。缺少出生时间、出生地或户型细节时，系统会自动降级并在报告附录说明。
+            不需要一次性给出完整命盘信息。缺少出生时间、出生地或户型细节时，系统会降低相关结论精度并在报告附录说明。
           </p>
           <div className="mt-8 border-l border-cinnabar pl-5 text-sm leading-7 text-bone">
             <p>仅供娱乐，不作为现实决策依据。</p>
-            <p>API 不可用时会自动切到本地备用生成，确保预览和 PDF 可用。</p>
+            <p>生成必须使用模型；如模型、代理或 key 异常，生成页会给出可复制的错误反馈。</p>
           </div>
         </div>
         <IntakeForm />

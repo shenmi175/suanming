@@ -2,73 +2,35 @@
 
 ## 目标
 
-这个项目不是要从零发明 LLM 平台，而是组合成熟工具：
+项目使用成熟工具组合，重点是稳定模型生成、结构化校验和 PDF 闭环：
 
 - Next.js 负责网站与 API routes。
-- OpenAI 官方 SDK 负责模型调用。
-- OpenAI Agents SDK 负责多 agent 编排。
-- Structured Outputs 负责稳定 JSON。
-- 本地知识库 / OpenAI File Search 负责资料检索。
-- Playwright/Puppeteer 负责 PDF。
+- PerceptLeap Responses API 负责多角色文本生成。
+- PerceptLeap Images API 负责可选封面图生成。
+- OpenAI SDK 保留为 `openai-direct` 单模型结构化输出路径。
+- Zod 负责所有模型输出校验。
+- 本地知识库负责 Researcher 的候选资料来源。
+- Playwright 负责 PDF。
 
 ## 推荐依赖
 
 ```bash
-pnpm add openai @openai/agents zod
+pnpm add openai undici zod zod-to-json-schema
 pnpm add -D vitest @playwright/test playwright tsx typescript
 ```
 
-可选：
+## 为什么使用 typed pipeline
 
-```bash
-pnpm add clsx tailwind-merge lucide-react
-pnpm dlx shadcn@latest init
-```
+当前版本不做自由 handoff。每个角色都是有输入、有 schema、有 artifact 的可观测步骤，便于错误定位和 PDF 稳定渲染。
 
-## 为什么不用完全自研 agent 框架
-
-自研框架会带来这些额外工作：
-
-- 角色状态管理
-- tool calling
-- handoff / agent-as-tool
-- tracing / debug
-- 结构化输出失败重试
-- 多模型配置
-- 中间产物可观察性
-
-第一版只需要一个 typed pipeline；真实 multi-agent 能力应该优先靠 OpenAI Agents SDK，而不是从零写。
-
-## 两种可选 LLM 路线
-
-### 路线 A：直接 Responses API，适合 MVP
-
-每个角色一次结构化调用：
+## 当前模型路线
 
 ```text
-profile + signals + notes -> Fusion JSON
-blueprint -> Draft JSON
-draft -> Review JSON
+Interviewer + Researcher 并行
+  -> Fusion
+  -> Copywriter
+  -> Image Director + Reviewer 并行
+  -> CyberFateReport JSON
 ```
 
-优点：简单、可控、便宜、容易测试。
-
-### 路线 B：OpenAI Agents SDK，适合多 agent
-
-使用 agents-as-tools 或 handoffs：
-
-```text
-Manager Agent
-  ├─ Researcher Agent as tool
-  ├─ Fusion Agent as tool
-  ├─ Copywriter Agent as tool
-  └─ Reviewer Agent as tool
-```
-
-优点：更接近你想要的“多个 LLM 角色协作”。
-
-## MVP 建议
-
-先做路线 A，保留 `AgentRunner` 接口；当报告质量稳定后，把真实多角色编排升级到路线 B。
-
-这样不是从零开始，而是先用官方 SDK 的直接结构化输出，后续自然迁移到官方 Agents SDK。
+失败策略是显式报错，不生成本地替代报告。

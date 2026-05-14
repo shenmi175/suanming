@@ -1,7 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { CyberFateReportSchema, type CyberFateReport } from "./reportSchema";
-import { sampleReport } from "./sampleReport";
 
 const dataDir = path.join(process.cwd(), ".cyber-fate-data", "reports");
 
@@ -16,8 +15,6 @@ export async function saveReport(report: CyberFateReport) {
 }
 
 export async function getReport(id: string) {
-  if (id === "sample") return sampleReport;
-
   try {
     const raw = await readFile(reportPath(id), "utf8");
     return CyberFateReportSchema.parse(JSON.parse(raw));

@@ -53,9 +53,9 @@ FROM base AS runner
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV ENABLE_OPENAI=false
-ENV ENABLE_PERCEPTLEAP=false
+ENV ENABLE_PERCEPTLEAP=true
 ENV ENABLE_PERCEPTLEAP_IMAGE=false
-ENV CYBER_FATE_LLM_MODE=mock
+ENV CYBER_FATE_LLM_MODE=perceptleap
 ENV APP_BASE_URL=http://localhost:3000
 
 COPY --from=builder /app/package.json ./package.json

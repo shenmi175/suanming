@@ -1,5 +1,5 @@
 export type AgentRole = "interviewer" | "researcher" | "fusion" | "copywriter" | "reviewer" | "image-director";
-export type LlmMode = "mock" | "openai-direct" | "openai-agents" | "perceptleap";
+export type LlmMode = "perceptleap" | "openai-direct";
 
 export interface RoleModelConfig {
   role: AgentRole;
@@ -84,15 +84,21 @@ export const perceptLeapRoleModelConfig: Record<AgentRole, RoleModelConfig> = {
 };
 
 export function getEffectiveLlmMode(): LlmMode {
-  const requested = process.env.CYBER_FATE_LLM_MODE;
-  const enablePerceptLeap = process.env.ENABLE_PERCEPTLEAP === "true";
-  const hasPerceptLeapKey = Boolean(process.env.PERCEPTLEAP_API_KEY);
-  if ((requested === "perceptleap" || enablePerceptLeap) && hasPerceptLeapKey) return "perceptleap";
+  const requested = process.env.CYBER_FATE_LLM_MODE || "perceptleap";
 
-  const enableOpenAI = process.env.ENABLE_OPENAI === "true";
-  const hasKey = Boolean(process.env.OPENAI_API_KEY);
-  if (!enableOpenAI || !hasKey) return "mock";
+  if (requested === "perceptleap") {
+    if (!process.env.PERCEPTLEAP_API_KEY) {
+      throw new Error("缺少 PERCEPTLEAP_API_KEY。当前版本要求使用模型生成，不再自动降级到本地内容。");
+    }
+    return "perceptleap";
+  }
 
-  if (requested === "openai-agents" || requested === "openai-direct") return requested;
-  return "openai-agents";
+  if (requested === "openai-direct") {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error("缺少 OPENAI_API_KEY。openai-direct 模式要求可用模型 key。");
+    }
+    return "openai-direct";
+  }
+
+  throw new Error(`不支持的 CYBER_FATE_LLM_MODE: ${requested}`);
 }

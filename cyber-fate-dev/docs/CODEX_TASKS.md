@@ -8,11 +8,11 @@
 - 在开发机上固定 Playwright 浏览器路径或完成 `playwright install chromium`。
 - 增加生成失败时的前端重试按钮。
 
-## P1：OpenAI 质量增强
+## P1：模型质量增强
 
-- 为 openai-agents 模式加入 Copywriter Agent 的结构化输出，而不是只由 deterministic builder assembly。
 - 把 Reviewer blocker 回路接入一次自动修订。
 - 记录 agent artifacts 到本地 JSON，给调试页展示。
+- 增加模型响应耗时、重试次数、traceId 的服务端日志。
 
 ## P2：命理模块升级
 

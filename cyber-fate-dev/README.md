@@ -8,16 +8,16 @@
 
 - Next.js App Router + TypeScript + Tailwind CSS。
 - 访谈式 intake 页面，使用 React Hook Form + Zod 校验。
-- 生成进度页，展示 Interviewer / Researcher / Fusion / Copywriter / Reviewer 五个步骤。
-- PerceptLeap API 多角色管线：Interviewer / Researcher / Fusion / Copywriter / Reviewer 生成结构化报告，可选 Image Director 生成封面图提示词与图像。
-- 本地备用管线：无 API key 或 API 调用失败时仍能生成完整报告。
+- 生成进度页，展示 Interviewer / Researcher / Fusion / Copywriter / Image Director / Reviewer 六个步骤。
+- PerceptLeap API 多角色管线：Interviewer 与 Researcher 并行启动；报告生成后 Image Director 与 Reviewer 并行执行。
+- 模型必选：缺少 key、代理失败、模型输出不合规时，页面右下角显示错误反馈，不自动降级到本地内容。
 - 基础命理 signal：星座、生肖公历近似、五行规则侧写、稳定易经 seed、风水取象。
 - 本地知识库读取：`content/metaphysics/*.md`。
 - 印章系统：按模块与关注领域选择印章。
 - 报告预览页：`/report/[id]`。
 - 打印页：`/report/[id]/print`。
 - PDF 下载接口：`/api/reports/[id]/pdf`，使用 Playwright；若 Playwright 浏览器未安装，会尝试本机 Chrome/Edge。
-- 测试覆盖核心 schema、signals、本地备用管线、PerceptLeap JSON 解析、印章与 PDF HTML renderer。
+- 测试覆盖核心 schema、signals、PerceptLeap JSON 解析、印章与 PDF HTML renderer。
 
 ## 本地启动
 
@@ -56,12 +56,6 @@ corepack pnpm dev
 
 ```text
 http://localhost:3000
-```
-
-也可以直接看样例报告：
-
-```text
-http://localhost:3000/report/sample
 ```
 
 ## Docker 一键启动
@@ -160,7 +154,7 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=C:\Program Files\Google\Chrome\Application\c
 
 ## 环境变量
 
-复制 `.env.example` 为 `.env.local`，默认不用填写 API key：
+复制 `.env.example` 为 `.env.local`，必须填写可用模型 API key：
 
 ```env
 OPENAI_API_KEY=
@@ -170,7 +164,7 @@ OPENAI_MODEL_RESEARCHER=
 OPENAI_MODEL_FUSION=
 OPENAI_MODEL_COPYWRITER=
 OPENAI_MODEL_REVIEWER=
-CYBER_FATE_LLM_MODE=mock
+CYBER_FATE_LLM_MODE=perceptleap
 ENABLE_OPENAI=false
 PERCEPTLEAP_API_KEY=
 PERCEPTLEAP_BASE_URL=https://api.perceptleap.com/v1
@@ -178,7 +172,7 @@ PERCEPTLEAP_TEXT_MODEL=gpt-5.4
 PERCEPTLEAP_IMAGE_MODEL=gpt-image-2
 PERCEPTLEAP_IMAGE_SIZE=1024x1024
 PERCEPTLEAP_IMAGE_QUALITY=low
-ENABLE_PERCEPTLEAP=false
+ENABLE_PERCEPTLEAP=true
 ENABLE_PERCEPTLEAP_IMAGE=false
 PERCEPTLEAP_PROXY_URL=
 ENABLE_WEB_SEARCH=false
@@ -188,12 +182,13 @@ APP_BASE_URL=http://localhost:3000
 
 ## 生成模式切换
 
-默认是本地备用模式：
+默认是 PerceptLeap 模型生成模式：
 
 ```env
 ENABLE_OPENAI=false
-ENABLE_PERCEPTLEAP=false
-CYBER_FATE_LLM_MODE=mock
+ENABLE_PERCEPTLEAP=true
+CYBER_FATE_LLM_MODE=perceptleap
+PERCEPTLEAP_API_KEY=sk-...
 ```
 
 启用 PerceptLeap API 多角色模式：
@@ -225,15 +220,6 @@ Docker 内访问宿主机代理时通常使用：
 PERCEPTLEAP_PROXY_URL=http://host.docker.internal:10809
 ```
 
-启用 OpenAI Agents SDK 模式：
-
-```env
-ENABLE_OPENAI=true
-CYBER_FATE_LLM_MODE=openai-agents
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL_DEFAULT=gpt-4.1-mini
-```
-
 启用 OpenAI Responses 结构化输出模式：
 
 ```env
@@ -243,7 +229,7 @@ OPENAI_API_KEY=sk-...
 OPENAI_MODEL_COPYWRITER=gpt-4.1-mini
 ```
 
-如果 PerceptLeap 或 OpenAI 调用失败，API 会自动降级到本地备用管线，并在报告 reviewer issues 中记录原因。
+如果 PerceptLeap 或 OpenAI 调用失败，API 会返回错误；生成页右下角会弹出带 traceId 的反馈信息，不会生成本地替代报告。
 
 ## 本地存储限制
 
@@ -253,7 +239,7 @@ OPENAI_MODEL_COPYWRITER=gpt-4.1-mini
 .cyber-fate-data/reports/*.json
 ```
 
-删除该目录会清空本地生成记录；`/report/sample` 不受影响。
+删除该目录会清空本地生成记录。
 
 ## 主要目录
 
@@ -264,7 +250,7 @@ src/lib/fate/               星座、生肖、五行、易象、风水、印章
 src/lib/research/           本地知识库读取
 src/lib/report/             report schema、构建器、存储
 src/lib/agents/             Agents SDK 定义与 pipeline 入口
-src/lib/llm/                PerceptLeap/OpenAI client、模型配置、本地备用 pipeline
+src/lib/llm/                PerceptLeap/OpenAI client、模型配置、结构化输出
 src/lib/pdf/                HTML renderer 与 Playwright PDF
 content/metaphysics/        本地玄学知识库
 tests/                      Vitest 测试
@@ -275,4 +261,4 @@ tests/                      Vitest 测试
 - 生肖按公历年份近似，未处理农历新年/立春边界。
 - 五行是象征性规则侧写，不是专业八字排盘。
 - 风水建议在没有户型图、坐向与现场测量时只做空间取象。
-- PerceptLeap mode 负责真实文本/可选图像生成；OpenAI mode 保留官方 SDK/Agents SDK 接入点；本地备用管线用于离线演示和失败降级。
+- PerceptLeap mode 负责真实文本/可选图像生成；OpenAI direct mode 保留为单模型结构化输出路径；运行时不再使用本地替代内容生成用户报告。

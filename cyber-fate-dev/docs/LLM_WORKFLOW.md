@@ -6,12 +6,11 @@
 
 ```text
 CYBER_FATE_LLM_MODE=perceptleap + ENABLE_PERCEPTLEAP=true + PERCEPTLEAP_API_KEY -> PerceptLeap Responses API
-ENABLE_OPENAI=true + CYBER_FATE_LLM_MODE=openai-agents -> @openai/agents
 ENABLE_OPENAI=true + CYBER_FATE_LLM_MODE=openai-direct -> OpenAI Responses Structured Output
-缺少可用 API key 或 API 调用失败 -> 本地备用管线
+缺少可用 API key 或 API 调用失败 -> API 错误，生成页右下角 toast 展示 traceId
 ```
 
-任何 PerceptLeap/OpenAI 调用失败都会降级到本地备用管线，并把错误写入 report reviewer issues。
+任何 PerceptLeap/OpenAI 调用失败都会返回错误，不会生成本地替代报告。
 
 ## 角色输入输出
 
@@ -29,6 +28,13 @@ src/lib/agents/schemas.ts
 - Copywriter：输出结构化报告草稿；PerceptLeap 模式会生成完整中文报告 JSON。
 - Reviewer：输出 passed、renderReady、issues、requiredRevisions。
 - Image Director：PerceptLeap 模式生成封面图提示词；`ENABLE_PERCEPTLEAP_IMAGE=true` 时调用 `gpt-image-2` 生成图像。
+
+并行关系：
+
+- Interviewer 与 Researcher 用 `Promise.all` 同时执行。
+- Fusion 等待二者完成。
+- Copywriter 等待 Fusion。
+- Image Director 与 Reviewer 用 `Promise.all` 同时执行。
 
 ## 本地知识库
 

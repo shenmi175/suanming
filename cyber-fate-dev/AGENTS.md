@@ -6,10 +6,10 @@
 
 ## 技术底座优先级
 
-1. 多 agent：优先使用 OpenAI 官方 `@openai/agents` TypeScript SDK。
-2. 直接模型调用：需要简单单次模型请求时使用官方 `openai` Node SDK。
-3. 结构化输出：优先使用 Zod schema + Agent `outputType`；不要靠纯 prompt 要 JSON。
-4. 资料检索：MVP 先用本地 `content/metaphysics`；联网搜索使用 Agents SDK `webSearchTool`；私有资料库使用 `fileSearchTool` / OpenAI vector store。
+1. 多角色生成：优先使用 PerceptLeap Responses API + typed pipeline。
+2. 直接模型调用：需要简单单次模型请求时使用官方 `openai` Node SDK 的 `openai-direct` 路径。
+3. 结构化输出：优先使用 Zod schema + JSON Schema；不要靠纯 prompt 要 JSON。
+4. 资料检索：MVP 先用本地 `content/metaphysics`；后续联网/私有资料库必须归一为 `ResearchNote[]`。
 5. Web：Next.js App Router + TypeScript。
 6. UI：Tailwind CSS + shadcn/ui，避免从零写基础组件。
 7. PDF：HTML 模板 + Playwright PDF。
@@ -22,6 +22,7 @@
 - 不要自己实现浏览器 PDF 引擎。
 - 不要自己实现完整农历、节气、八字天文历法，除非已经证明现成库无法满足。
 - 不要把五个 agent 写成五段散落的 prompt；必须有统一 schema、日志和 orchestration。
+- 用户报告必须由模型生成；模型失败时显式报错，不生成本地替代报告。
 
 ## 推荐目录
 
@@ -41,10 +42,9 @@ src/
     cyber-ui/
   lib/
     agents/
-      cyberFateAgents.ts
+      runCyberFatePipeline.ts
       schemas.ts
       tools.ts
-      prompts/
     fate/
       zodiac.ts
       astrology.ts

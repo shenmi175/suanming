@@ -21,7 +21,7 @@ import { CyberFateReportSchema, type CyberFateReport, type ReportStamp } from "@
 import { generatePerceptLeapImage } from "./perceptLeapClient";
 import { perceptLeapRoleModelConfig, type AgentRole } from "./modelConfig";
 import { generatePerceptLeapJson } from "./perceptLeapStructuredOutput";
-import type { PipelineArtifact } from "./mockPipeline";
+import type { PipelineArtifact } from "@/lib/agents/pipelineTypes";
 
 type SignalBundle = ReturnType<typeof calculateFateSignals>;
 
@@ -118,9 +118,12 @@ function normalizeReview(review: ReviewOutput, extraIssues: CyberFateReport["rev
   } satisfies CyberFateReport["reviewer"];
 }
 
-function fallbackStampCheck(modelStamps: ReportStamp[], requiredStamps: ReportStamp[]) {
-  if (modelStamps.length > 0) return modelStamps;
-  return requiredStamps;
+function mergeRequiredStamps(modelStamps: ReportStamp[], requiredStamps: ReportStamp[]) {
+  const byId = new Map(modelStamps.map((stamp) => [stamp.id, stamp]));
+  for (const stamp of requiredStamps) {
+    if (!byId.has(stamp.id)) byId.set(stamp.id, stamp);
+  }
+  return Array.from(byId.values());
 }
 
 async function callRole<T>(input: {
@@ -152,14 +155,14 @@ export async function runPerceptLeapPipeline(profile: IntakeProfile) {
   const reportId = createReportId();
   const generatedAt = new Date().toISOString();
   const currentDate = currentShanghaiDate();
-  let signals = calculateFateSignals(profile);
-  let uncertaintyNotes = buildUncertaintyNotes(profile);
+  const signals = calculateFateSignals(profile);
+  const uncertaintyNotes = buildUncertaintyNotes(profile);
   const candidateNotes = searchLocalKnowledge({
     systems: ["五行", "星座", "生肖", "易经", "风水"],
     query: profile.question ?? undefined,
     limit: 12,
   });
-  let requiredStamps = selectStamps({ focusAreas: profile.focusAreas, reviewerPassed: true });
+  const requiredStamps = selectStamps({ focusAreas: profile.focusAreas, reviewerPassed: true });
   const identity = ReportIdentitySchema.parse({
     id: reportId,
     title: "Cyber Fate / 赛博天命局",
@@ -168,9 +171,7 @@ export async function runPerceptLeapPipeline(profile: IntakeProfile) {
     entertainmentNotice,
   });
 
-  const artifacts: PipelineArtifact[] = [];
-
-  const interview = await callRole({
+  const interviewPromise = callRole({
     role: "interviewer",
     label: "PerceptLeap Interviewer",
     schemaName: "InterviewOutput",
@@ -187,13 +188,8 @@ export async function runPerceptLeapPipeline(profile: IntakeProfile) {
       ],
     },
   });
-  artifacts.push(interview.artifact);
 
-  const interviewProfile = IntakeProfileSchema.parse(interview.output.profile);
-  signals = calculateFateSignals(interviewProfile);
-  uncertaintyNotes = buildUncertaintyNotes(interviewProfile);
-  requiredStamps = selectStamps({ focusAreas: interviewProfile.focusAreas, reviewerPassed: true });
-  const research = await callRole({
+  const researchPromise = callRole({
     role: "researcher",
     label: "PerceptLeap Researcher",
     schemaName: "ResearchOutput",
@@ -202,13 +198,16 @@ export async function runPerceptLeapPipeline(profile: IntakeProfile) {
       "你是 Researcher。只能从 candidateNotes 中选择、排序和少量压缩 ResearchNote；不要编造新 id、source 或未经提供的玄学资料；不要写最终报告。",
     user: {
       currentDate,
-      profile: interviewProfile,
+      profile,
       calculatedSignals: signals.calculatedSignals,
       candidateNotes,
       selectionTarget: "选择 6 到 10 条最适合本用户关注领域和 signals 的 notes。",
     },
   });
-  artifacts.push(research.artifact);
+
+  const [interview, research] = await Promise.all([interviewPromise, researchPromise]);
+  const artifacts: PipelineArtifact[] = [interview.artifact, research.artifact];
+  const interviewProfile = IntakeProfileSchema.parse(interview.output.profile);
 
   const fusion = await callRole({
     role: "fusion",
@@ -264,14 +263,14 @@ export async function runPerceptLeapPipeline(profile: IntakeProfile) {
     ...identity,
     userProfile: reportUserProfile(interviewProfile, uncertaintyNotes),
     signals: reportSignals(signals),
-    stamps: fallbackStampCheck(copywriter.output.stamps, requiredStamps),
+    stamps: mergeRequiredStamps(copywriter.output.stamps, requiredStamps),
     reviewer: {
       passed: true,
       issues: [],
     },
   });
 
-  const visual = await callRole({
+  const visualPromise = callRole({
     role: "image-director",
     label: "PerceptLeap Image Director",
     schemaName: "VisualPromptOutput",
@@ -292,42 +291,8 @@ export async function runPerceptLeapPipeline(profile: IntakeProfile) {
       ],
     },
   });
-  artifacts.push(visual.artifact);
 
-  const imageIssues: CyberFateReport["reviewer"]["issues"] = [];
-  report = CyberFateReportSchema.parse({
-    ...report,
-    coverImage: {
-      prompt: visual.output.prompt,
-      altText: visual.output.altText,
-    },
-  });
-
-  if (process.env.ENABLE_PERCEPTLEAP_IMAGE === "true" || process.env.GENERATE_REPORT_IMAGE === "true") {
-    try {
-      const image = await generatePerceptLeapImage({
-        prompt: visual.output.prompt,
-      });
-      report = CyberFateReportSchema.parse({
-        ...report,
-        coverImage: {
-          prompt: visual.output.prompt,
-          altText: visual.output.altText,
-          dataUrl: image.dataUrl,
-          model: image.model,
-          createdAt: new Date().toISOString(),
-        },
-      });
-    } catch (error) {
-      imageIssues.push({
-        severity: "low",
-        message: "封面图像生成失败，报告文本与 PDF 仍可使用。",
-        suggestedFix: error instanceof Error ? error.message : "检查 PerceptLeap 图像模型、代理与网络。",
-      });
-    }
-  }
-
-  const review = await callRole({
+  const reviewPromise = callRole({
     role: "reviewer",
     label: "PerceptLeap Reviewer",
     schemaName: "ReviewOutput",
@@ -347,12 +312,38 @@ export async function runPerceptLeapPipeline(profile: IntakeProfile) {
       ],
     },
   });
-  artifacts.push(review.artifact);
+
+  const [visual, review] = await Promise.all([visualPromise, reviewPromise]);
+  artifacts.push(visual.artifact, review.artifact);
+
+  report = CyberFateReportSchema.parse({
+    ...report,
+    coverImage: {
+      prompt: visual.output.prompt,
+      altText: visual.output.altText,
+    },
+  });
+
+  if (process.env.ENABLE_PERCEPTLEAP_IMAGE === "true" || process.env.GENERATE_REPORT_IMAGE === "true") {
+    const image = await generatePerceptLeapImage({
+      prompt: visual.output.prompt,
+    });
+    report = CyberFateReportSchema.parse({
+      ...report,
+      coverImage: {
+        prompt: visual.output.prompt,
+        altText: visual.output.altText,
+        dataUrl: image.dataUrl,
+        model: image.model,
+        createdAt: new Date().toISOString(),
+      },
+    });
+  }
 
   const reviewOutput = ReviewOutputSchema.parse(review.output);
   const reviewedReport = CyberFateReportSchema.parse({
     ...report,
-    reviewer: normalizeReview(reviewOutput, imageIssues),
+    reviewer: normalizeReview(reviewOutput),
   });
 
   return {

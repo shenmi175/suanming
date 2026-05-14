@@ -158,16 +158,32 @@ export function renderReportHtml(report: CyberFateReport) {
     .seal {
       width: 26mm;
       height: 26mm;
-      border: 1px solid rgba(213,68,47,.72);
+      border: 1px solid rgba(213,68,47,.82);
       color: #d5442f;
       display: grid;
       place-items: center;
       text-align: center;
       padding: 3mm;
       font-family: Georgia, "SimSun", serif;
-      font-weight: 700;
-      line-height: 1.25;
-      box-shadow: inset 0 0 0 1px rgba(213,68,47,.25);
+      font-weight: 900;
+      line-height: 1.15;
+      writing-mode: vertical-rl;
+      position: relative;
+      background:
+        linear-gradient(45deg, transparent 49%, rgba(213,68,47,.16) 49% 51%, transparent 51%),
+        linear-gradient(-45deg, transparent 49%, rgba(213,68,47,.10) 49% 51%, transparent 51%),
+        radial-gradient(circle at 28% 24%, rgba(255,255,255,.28), transparent 14%),
+        rgba(213,68,47,.06);
+      box-shadow:
+        inset 0 0 0 1px rgba(213,68,47,.28),
+        inset 0 0 14px rgba(213,68,47,.12),
+        0 0 20px rgba(213,68,47,.12);
+    }
+    .seal::after {
+      content: "";
+      position: absolute;
+      inset: 2mm;
+      border: 1px solid rgba(213,68,47,.36);
     }
     .stamp-grid {
       display: grid;

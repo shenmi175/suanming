@@ -6,13 +6,13 @@
 Landing -> Intake -> Generate Pipeline -> Report Preview -> Print Layout -> PDF Download
 ```
 
-第一版优先保证本地端到端可演示。默认走本地备用管线；有 `PERCEPTLEAP_API_KEY` 且 `CYBER_FATE_LLM_MODE=perceptleap` 时走 PerceptLeap 多角色 API 管线；仍保留 OpenAI SDK/Agents SDK 接入点。
+第一版优先保证本地端到端可演示，但用户报告生成必须走模型。默认使用 `CYBER_FATE_LLM_MODE=perceptleap`；缺少 key、代理失败或模型输出不合规时，API 返回错误，生成页右下角显示可复制反馈信息，不自动生成本地替代报告。
 
 ## Web 层
 
 - `/`：产品首页与样例入口。
 - `/intake`：访谈式表单，React Hook Form + Zod 校验。
-- `/generate`：展示五个 agent 步骤，并调用 `/api/reports`。
+- `/generate`：展示六个 agent 步骤，并调用 `/api/reports`。
 - `/report/[id]`：在线报告预览。
 - `/report/[id]/print`：专门给打印/PDF 使用的页面布局。
 - `/api/reports`：创建报告，保存本地 JSON。
@@ -30,7 +30,6 @@ src/lib/fate/stamps.ts
 src/lib/report/buildReport.ts
 src/lib/llm/perceptLeapClient.ts
 src/lib/llm/perceptLeapPipeline.ts
-src/lib/llm/mockPipeline.ts
 src/lib/agents/runCyberFatePipeline.ts
 src/lib/pdf/*
 ```
@@ -47,11 +46,18 @@ IntakeProfile
   -> Reviewer: 检查过度确定性、章节缺失、印章理由与 PDF readiness
 ```
 
-PerceptLeap mode 中五个文本角色都调用 Responses API，并用 Zod parse 输出；Image Director 先生成图像提示词，只有 `ENABLE_PERCEPTLEAP_IMAGE=true` 时才调用 `gpt-image-2`。OpenAI Agents mode 中 Interviewer、Researcher、Fusion、Reviewer 使用 `@openai/agents`；本地备用模式由规则代码产出 artifacts。
+PerceptLeap mode 中五个文本角色都调用 Responses API，并用 Zod parse 输出；Image Director 先生成图像提示词，只有 `ENABLE_PERCEPTLEAP_IMAGE=true` 时才调用 `gpt-image-2`。OpenAI direct mode 保留为单模型结构化输出路径；旧 OpenAI Agents assembly 路径已从运行时移除。
+
+并行策略：
+
+- Interviewer 与 Researcher 同时启动，Researcher 使用已校验 intake、signals 与本地 notes 候选集。
+- Fusion 等待访谈与检索结果。
+- Copywriter 等待 Fusion。
+- Image Director 与 Reviewer 在报告 JSON 完成后并行执行。
 
 ## PDF 架构
 
-LLM 或本地备用管线只产出 JSON：
+模型管线只产出 JSON：
 
 ```text
 CyberFateReport JSON -> renderReportHtml(report) -> Playwright page.pdf()

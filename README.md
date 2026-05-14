@@ -180,7 +180,7 @@ docker compose up --build
 
 ## API 生成模式
 
-默认是本地备用模式，不需要 API key。
+默认要求使用模型 API，不再自动降级到本地生成。没有 key 时，生成页会在右下角弹出错误反馈。
 
 启用 PerceptLeap：
 
@@ -201,8 +201,7 @@ $env:ENABLE_PERCEPTLEAP_IMAGE="true"
 如要启用 OpenAI：
 
 ```powershell
-$env:ENABLE_OPENAI="true"
-$env:CYBER_FATE_LLM_MODE="openai-agents"
+$env:CYBER_FATE_LLM_MODE="openai-direct"
 $env:OPENAI_API_KEY="sk-..."
 docker compose up --build
 ```

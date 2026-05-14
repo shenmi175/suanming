@@ -1,4 +1,4 @@
-import { ArrowRight, FileDown, ScanLine, Sparkles } from "lucide-react";
+import { ArrowRight, ScanLine, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Seal } from "@/components/report/Seal";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,8 @@ export default function HomePage() {
           <Link href="/" className="font-serif text-xl tracking-wide">
             Cyber Fate / 赛博天命局
           </Link>
-          <Link href="/report/sample" className="text-sm text-bone hover:text-paper">
-            查看样例
+          <Link href="/intake" className="text-sm text-bone hover:text-paper">
+            开始生成
           </Link>
         </nav>
 
@@ -31,7 +31,7 @@ export default function HomePage() {
               <span className="block text-cinnabar">赛博天命局</span>
             </h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-bone md:text-xl">
-              输入昵称、出生信息、当前城市、关心领域与问题，由多角色 API 管线生成一份赛博东方玄学风格的命运白皮书，并保留本地备用生成与 PDF 闭环。
+              输入昵称、出生信息、当前城市、关心领域与问题，由多角色模型管线生成一份赛博东方玄学风格的命运白皮书，并导出完整 PDF。
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link href="/intake">
@@ -40,10 +40,10 @@ export default function HomePage() {
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/report/sample">
+              <Link href="/intake">
                 <Button variant="secondary">
-                  <FileDown className="h-4 w-4" />
-                  预览样例报告
+                  <Sparkles className="h-4 w-4" />
+                  进入访谈表单
                 </Button>
               </Link>
             </div>
@@ -78,7 +78,7 @@ export default function HomePage() {
             <Sparkles className="h-4 w-4 text-aurora" />
             Zod schema 约束报告 JSON
           </p>
-          <p>五角色 pipeline：访谈、检索、融合、写作、审阅</p>
+          <p>六角色 pipeline：访谈、检索、融合、写作、视觉、审阅</p>
           <p>HTML print layout + Playwright PDF 下载</p>
         </div>
       </section>
