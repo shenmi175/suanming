@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
-"""Minimal validator for this Codex skill pack.
-
-Checks:
-- every .agents/skills/*/SKILL.md has YAML-ish front matter with name and description
-- referenced dev skill reference files exist
-- root AGENTS.md exists
-"""
+"""Validate the local Cyber Fate Codex skill pack and runtime policy."""
 from __future__ import annotations
 
 import re
@@ -13,6 +7,24 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+RUNTIME_SCAN_ROOTS = [
+    ROOT / "src",
+    ROOT / "tests",
+    ROOT / "prompts",
+    ROOT / "docs",
+    ROOT / "README.md",
+    ROOT / ".env.example",
+]
+
+FORBIDDEN_RUNTIME_PATTERNS = [
+    r"runMockPipeline",
+    r"mockPipeline",
+    r"buildCyberFateReport",
+    r"sampleReport",
+    r"/report/sample",
+    r"CYBER_FATE_LLM_MODE\s*[:=].*mock",
+]
 
 
 def read(path: Path) -> str:
@@ -30,6 +42,30 @@ def validate_skill(path: Path) -> list[str]:
         errors.append(f"{path}: missing name")
     if not re.search(r"^description:\s*.+", front, flags=re.M):
         errors.append(f"{path}: missing description")
+    return errors
+
+
+def iter_scan_files(root: Path):
+    if not root.exists():
+        return
+    if root.is_file():
+        yield root
+        return
+    for path in root.rglob("*"):
+        if path.is_file() and path.suffix in {".md", ".json", ".ts", ".tsx", ".js", ".mjs", ".env"}:
+            yield path
+
+
+def validate_no_local_generation() -> list[str]:
+    errors: list[str] = []
+    compiled = [re.compile(pattern, re.I) for pattern in FORBIDDEN_RUNTIME_PATTERNS]
+    for root in RUNTIME_SCAN_ROOTS:
+        for path in iter_scan_files(root):
+            text = read(path)
+            for line_no, line in enumerate(text.splitlines(), start=1):
+                if any(pattern.search(line) for pattern in compiled):
+                    rel = path.relative_to(ROOT)
+                    errors.append(f"{rel}:{line_no}: forbidden local-generation marker: {line.strip()}")
     return errors
 
 
@@ -54,13 +90,15 @@ def main() -> int:
         if not ref.exists():
             errors.append(f"missing reference: {ref.relative_to(ROOT)}")
 
+    errors.extend(validate_no_local_generation())
+
     if errors:
-        print("Skill pack validation failed:")
+        print("Cyber Fate validation failed:")
         for err in errors:
             print(f"- {err}")
         return 1
 
-    print(f"Skill pack validation passed. Found {len(skill_files)} skills.")
+    print(f"Cyber Fate validation passed. Found {len(skill_files)} skills and no local-generation markers.")
     return 0
 
 

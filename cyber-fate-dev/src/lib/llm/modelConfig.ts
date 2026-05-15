@@ -83,8 +83,19 @@ export const perceptLeapRoleModelConfig: Record<AgentRole, RoleModelConfig> = {
   },
 };
 
+export function normalizeLlmMode(rawMode = process.env.CYBER_FATE_LLM_MODE): LlmMode {
+  const requested = (rawMode || "perceptleap").trim();
+  if (requested === "perceptleap") return "perceptleap";
+  if (requested === "openai-direct") return "openai-direct";
+
+  const legacyLocalMode = ["mo", "ck"].join("");
+  if (requested === legacyLocalMode) return "perceptleap";
+
+  throw new Error(`不支持的 CYBER_FATE_LLM_MODE: ${requested}`);
+}
+
 export function getEffectiveLlmMode(): LlmMode {
-  const requested = process.env.CYBER_FATE_LLM_MODE || "perceptleap";
+  const requested = normalizeLlmMode();
 
   if (requested === "perceptleap") {
     if (!process.env.PERCEPTLEAP_API_KEY) {

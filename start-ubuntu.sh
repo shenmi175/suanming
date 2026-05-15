@@ -236,7 +236,8 @@ start_app() {
 
   export APP_BASE_URL="http://localhost:$PORT"
   export ENABLE_OPENAI="${ENABLE_OPENAI:-false}"
-  export CYBER_FATE_LLM_MODE="${CYBER_FATE_LLM_MODE:-mock}"
+  export ENABLE_PERCEPTLEAP="${ENABLE_PERCEPTLEAP:-true}"
+  export CYBER_FATE_LLM_MODE="${CYBER_FATE_LLM_MODE:-perceptleap}"
 
   echo ""
   echo "Cyber Fate will listen on:"
