@@ -12,6 +12,7 @@
     "start:frontend": "next start",
     "start:backend": "tsx src/backend/server.ts",
     "lint": "next lint",
+    "check:architecture": "node scripts/check-architecture-boundaries.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "pdf:install": "playwright install chromium"

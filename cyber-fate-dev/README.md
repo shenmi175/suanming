@@ -293,7 +293,8 @@ OPENAI_MODEL_COPYWRITER=gpt-4.1-mini
 ## 主要目录
 
 ```text
-src/app/                    页面与 API routes
+src/app/                    Next frontend 页面路由
+src/backend/                独立 backend HTTP API
 src/components/             UI、报告预览、印章组件
 src/lib/fate/               星座、生肖、五行、易象、风水、印章
 src/lib/research/           本地知识库读取
@@ -303,6 +304,7 @@ src/lib/llm/                PerceptLeap/OpenAI client、模型配置、结构化
 src/lib/pdf/                HTML renderer 与 Playwright PDF
 content/metaphysics/        本地玄学知识库
 tests/                      Vitest 测试
+docs/developer-library/     可离线打开的 HTML 开发者文档库
 ```
 
 ## 当前边界

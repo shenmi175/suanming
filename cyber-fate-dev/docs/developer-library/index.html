@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cyber Fate Developer Library</title>
+  <style>
+    :root {
+      --ink: #171513;
+      --paper: #f6f1e7;
+      --panel: #fffaf0;
+      --line: #d7c8ad;
+      --muted: #6d6254;
+      --cinnabar: #c43f2e;
+      --aurora: #16a085;
+      --brass: #a7782a;
+      --code: #231f1a;
+      --shadow: 0 18px 50px rgba(23, 21, 19, 0.12);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font: 16px/1.7 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: inherit; }
+    code {
+      border: 1px solid rgba(167, 120, 42, 0.25);
+      border-radius: 5px;
+      background: rgba(167, 120, 42, 0.08);
+      padding: 0.08rem 0.32rem;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+    pre {
+      overflow: auto;
+      border-radius: 8px;
+      background: var(--code);
+      color: #f8ead1;
+      padding: 1rem;
+      line-height: 1.55;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+    }
+    pre code { border: 0; background: transparent; padding: 0; color: inherit; }
+    .shell { display: grid; grid-template-columns: 280px minmax(0, 1fr); min-height: 100vh; }
+    nav {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      border-right: 1px solid var(--line);
+      background: #211d19;
+      color: var(--paper);
+      padding: 1.4rem;
+    }
+    nav h1 {
+      margin: 0 0 1rem;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.45rem;
+      line-height: 1.2;
+    }
+    nav p { margin: 0 0 1.4rem; color: #d5c8b5; font-size: 0.9rem; }
+    nav a {
+      display: block;
+      border-radius: 6px;
+      color: #f4ead9;
+      padding: 0.48rem 0.6rem;
+      text-decoration: none;
+      font-size: 0.94rem;
+    }
+    nav a:hover { background: rgba(246,241,231,0.08); }
+    main { max-width: 1180px; padding: 2rem 2.5rem 5rem; }
+    section {
+      margin: 0 0 2rem;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 1.6rem;
+    }
+    .hero {
+      border-color: rgba(196, 63, 46, 0.35);
+      background: linear-gradient(135deg, rgba(196,63,46,0.09), rgba(22,160,133,0.07)), var(--panel);
+    }
+    .eyebrow {
+      margin: 0 0 0.4rem;
+      color: var(--cinnabar);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+    h2, h3 { margin: 0 0 0.8rem; font-family: Georgia, "Times New Roman", serif; line-height: 1.2; }
+    h2 { font-size: 2rem; }
+    h3 { font-size: 1.28rem; }
+    p { margin: 0 0 1rem; }
+    ul, ol { margin: 0.4rem 0 1rem 1.2rem; padding: 0; }
+    li { margin: 0.3rem 0; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95rem; }
+    th, td { border: 1px solid var(--line); padding: 0.7rem; text-align: left; vertical-align: top; }
+    th { background: rgba(167,120,42,0.12); }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+    .card { border: 1px solid rgba(167,120,42,0.35); border-radius: 8px; background: rgba(255,255,255,0.45); padding: 1rem; }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      background: rgba(22,160,133,0.12);
+      color: #0f6d5b;
+      padding: 0.18rem 0.55rem;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+    .warn { background: rgba(196,63,46,0.1); color: #8c2c20; }
+    .diagram { display: grid; grid-template-columns: 1fr 64px 1fr; align-items: stretch; gap: 0.75rem; margin: 1rem 0; }
+    .box { border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,0.55); padding: 1rem; }
+    .arrow { display: grid; place-items: center; color: var(--cinnabar); font-size: 1.8rem; font-weight: 900; }
+    .small { color: var(--muted); font-size: 0.92rem; }
+    @media (max-width: 900px) {
+      .shell { grid-template-columns: 1fr; }
+      nav { position: static; height: auto; }
+      main { padding: 1rem; }
+      .grid, .diagram { grid-template-columns: 1fr; }
+      .arrow { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <nav>
+      <h1>Cyber Fate Developer Library</h1>
+      <p>前后端分离审查、接口契约、样式改造和运行配置参考。</p>
+      <a href="#audit">审查结论</a>
+      <a href="#runtime">运行时结构</a>
+      <a href="#boundaries">边界规则</a>
+      <a href="#frontend">前端样式修改</a>
+      <a href="#backend">后端 API</a>
+      <a href="#env">环境变量</a>
+      <a href="#quality">质量检查</a>
+      <a href="#handoff">开发交接</a>
+    </nav>
+    <main>
+      <section class="hero" id="audit">
+        <p class="eyebrow">Architecture Audit</p>
+        <h2>审查结论：当前项目已经是前后端分离运行形态</h2>
+        <p><span class="status">PASS</span> Next frontend 不再暴露 <code>src/app/api/reports</code> 路由，也不直接导入模型调度、PDF 生成或报告存储模块。</p>
+        <p>前端通过 <code>src/lib/frontend/backendApi.ts</code> 生成 backend API 地址；后端入口为 <code>src/backend/server.ts</code>，独立负责报告生成、读取、PDF 与模型错误返回。</p>
+        <div class="diagram">
+          <div class="box">
+            <h3>Frontend</h3>
+            <p>Next.js App Router<br />页面、表单、报告预览、样式和交互。</p>
+            <p class="small">默认端口：<code>3000</code></p>
+          </div>
+          <div class="arrow">→</div>
+          <div class="box">
+            <h3>Backend</h3>
+            <p>Node HTTP API<br />模型 pipeline、报告 JSON 存储、PDF、CORS、错误契约。</p>
+            <p class="small">默认端口：<code>4000</code></p>
+          </div>
+        </div>
+      </section>
+
+      <section id="runtime">
+        <h2>运行时结构</h2>
+        <table>
+          <thead><tr><th>层</th><th>目录</th><th>职责</th><th>禁止事项</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Frontend</td>
+              <td><code>src/app</code>, <code>src/components</code>, <code>src/lib/frontend</code></td>
+              <td>页面路由、React 组件、浏览器 API base URL、报告展示。</td>
+              <td>不能 import <code>src/lib/llm</code>, <code>src/lib/agents</code>, <code>src/lib/pdf</code>, <code>reportStore</code>。</td>
+            </tr>
+            <tr>
+              <td>Backend</td>
+              <td><code>src/backend</code>, <code>src/lib/agents</code>, <code>src/lib/llm</code>, <code>src/lib/pdf</code>, <code>src/lib/report</code></td>
+              <td>HTTP API、模型调用、Zod 校验、文件存储、PDF 输出。</td>
+              <td>不能 import Next 页面、React 组件或依赖浏览器运行时。</td>
+            </tr>
+            <tr>
+              <td>Shared Contract</td>
+              <td><code>src/lib/schemas</code>, <code>src/lib/report/reportSchema.ts</code></td>
+              <td>前后端共享类型与 Zod schema。</td>
+              <td>不要放业务副作用、文件 I/O 或模型调用。</td>
+            </tr>
+          </tbody>
+        </table>
+        <pre><code>pnpm dev     # 同时启动 frontend + backend
+pnpm start   # production build 后同时启动 frontend + backend
+pnpm check:architecture</code></pre>
+      </section>
+
+      <section id="boundaries">
+        <h2>边界规则</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>自动化边界检查</h3>
+            <p><code>scripts/check-architecture-boundaries.mjs</code> 会阻止相对 Next API 调用、前端导入后端模块、backend 依赖 React/Next 页面。</p>
+            <pre><code>pnpm check:architecture</code></pre>
+          </div>
+          <div class="card">
+            <h3>运行时配置</h3>
+            <p><code>run-dev.mjs</code> 和 <code>run-start.mjs</code> 会写入 <code>public/runtime-config.js</code>。浏览器按运行时端口调用 backend，避免 Next build 阶段固化错误 API 地址。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="frontend">
+        <h2>前端样式修改指南</h2>
+        <table>
+          <thead><tr><th>修改目标</th><th>推荐文件</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>全局字体、背景、主题色</td><td><code>src/app/globals.css</code>, <code>tailwind.config.ts</code></td><td>优先改 token，不要散落硬编码颜色。</td></tr>
+            <tr><td>首页视觉</td><td><code>src/app/page.tsx</code></td><td>只负责入口和跳转，不应调用 backend。</td></tr>
+            <tr><td>访谈表单</td><td><code>src/app/intake/IntakeForm.tsx</code></td><td>字段变更必须同步 <code>src/lib/schemas/intake.ts</code>。</td></tr>
+            <tr><td>生成进度和错误 toast</td><td><code>src/app/generate/GenerateClient.tsx</code></td><td>只能通过 <code>backendApiUrl()</code> 调 API；错误结构来自 backend。</td></tr>
+            <tr><td>报告预览和印章</td><td><code>src/components/report/*</code></td><td>适合视觉迭代。数据只来自 <code>CyberFateReport</code> schema。</td></tr>
+          </tbody>
+        </table>
+        <p>样式改造的成熟路径是：先修改共享 token，再调整组件布局，最后用浏览器验证桌面和移动端。避免为了样式读取文件系统或调用模型接口。</p>
+      </section>
+
+      <section id="backend">
+        <h2>后端 API 参考</h2>
+        <table>
+          <thead><tr><th>方法</th><th>路径</th><th>用途</th><th>主要响应</th></tr></thead>
+          <tbody>
+            <tr><td>GET</td><td><code>/health</code></td><td>健康检查与当前模型模式。</td><td><code>{ ok, service, mode, timestamp }</code></td></tr>
+            <tr><td>POST</td><td><code>/api/reports</code></td><td>校验 intake，调用模型 pipeline，保存报告。</td><td><code>{ id, mode, report, artifacts }</code></td></tr>
+            <tr><td>GET</td><td><code>/api/reports/:id</code></td><td>读取报告 JSON。</td><td><code>CyberFateReport</code> 或 <code>REPORT_NOT_FOUND</code></td></tr>
+            <tr><td>GET</td><td><code>/api/reports/:id/pdf</code></td><td>生成并下载 PDF。</td><td><code>application/pdf</code> 或 <code>PDF_GENERATION_FAILED</code></td></tr>
+          </tbody>
+        </table>
+        <h3>错误契约</h3>
+        <pre><code>{
+  "error": "MODEL_GENERATION_FAILED",
+  "message": "已隐藏 API key 的错误信息",
+  "traceId": "ERR-...",
+  "occurredAt": "2026-05-15T18:27:47.062Z",
+  "mode": "perceptleap",
+  "hint": "当前版本要求模型生成..."
+}</code></pre>
+        <p>后端已经具备基础成熟度：CORS allowlist、1MB 请求体限制、Zod 输入校验、API key 脱敏、模型错误不 fallback、本地 JSON 存储和 PDF 失败结构化返回。</p>
+        <p><span class="status warn">后续增强</span> 如果进入多人协作或公网部署，应继续增加鉴权、速率限制、持久化数据库、请求日志与 OpenAPI 导出。</p>
+      </section>
+
+      <section id="env">
+        <h2>环境变量与本地配置</h2>
+        <p>首次运行脚本会自动创建本地 env 文件，它们已被 <code>.gitignore</code> 忽略，真实 API key 不会上传。</p>
+        <pre><code>F:\project\suanming\.env
+F:\project\suanming\cyber-fate-dev\.env.local</code></pre>
+        <table>
+          <thead><tr><th>变量</th><th>用途</th><th>默认</th></tr></thead>
+          <tbody>
+            <tr><td><code>FRONTEND_PORT</code></td><td>Next frontend 端口。</td><td><code>3000</code></td></tr>
+            <tr><td><code>BACKEND_PORT</code></td><td>backend API 端口。</td><td><code>4000</code></td></tr>
+            <tr><td><code>FRONTEND_ORIGIN</code></td><td>backend 默认允许的前端 Origin。</td><td><code>http://localhost:3000</code></td></tr>
+            <tr><td><code>BACKEND_CORS_ORIGINS</code></td><td>逗号分隔的 CORS allowlist；留空时允许 <code>FRONTEND_ORIGIN</code> 和当前 <code>FRONTEND_PORT</code> 的 localhost/127.0.0.1。</td><td>空</td></tr>
+            <tr><td><code>PERCEPTLEAP_API_KEY</code></td><td>本地明文 PerceptLeap key。</td><td>空</td></tr>
+            <tr><td><code>PERCEPTLEAP_API_KEY_ENCRYPTED</code></td><td>加密 PerceptLeap key，优先于明文。</td><td>空</td></tr>
+            <tr><td><code>CYBER_FATE_ENV_SECRET</code></td><td>解密 <code>*_API_KEY_ENCRYPTED</code> 的口令。</td><td>空</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="quality">
+        <h2>质量检查清单</h2>
+        <pre><code>pnpm check:architecture
+python scripts/validate_skill_pack.py
+pnpm test
+pnpm lint
+pnpm exec tsc --noEmit
+pnpm build</code></pre>
+        <ol>
+          <li>设置 <code>FRONTEND_PORT=3200</code>, <code>BACKEND_PORT=4200</code>。</li>
+          <li>运行 <code>pnpm start</code>。</li>
+          <li>检查 <code>GET http://127.0.0.1:4200/health</code>。</li>
+          <li>打开 <code>http://localhost:3200/generate</code>，确认请求命中 <code>http://localhost:4200/api/reports</code>。</li>
+        </ol>
+      </section>
+
+      <section id="handoff">
+        <h2>开发交接摘要</h2>
+        <ul>
+          <li>做前端样式时，只改 <code>src/app</code>、<code>src/components</code>、Tailwind/global CSS 和 schema 类型。</li>
+          <li>做模型、PDF、存储、API 错误时，只改 backend 和 <code>src/lib</code> 服务模块。</li>
+          <li>新增 API 必须先写在 backend，再让 frontend 通过 <code>backendApiUrl()</code> 访问。</li>
+          <li>不要恢复 Next <code>src/app/api</code> 路由，避免回到全栈单体耦合。</li>
+          <li>真实 API key 只写入本地 <code>.env</code> 或 <code>.env.local</code>，不要提交。</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

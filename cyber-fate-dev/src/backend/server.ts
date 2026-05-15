@@ -28,12 +28,23 @@ function safeResponseMode() {
   }
 }
 
+function originAllowed(origin: string) {
+  const allowedOrigins = serverEnv.backend.corsOrigins;
+  return allowedOrigins.includes("*") || allowedOrigins.includes(origin);
+}
+
 function setCors(request: IncomingMessage, response: ServerResponse) {
   const origin = request.headers.origin;
-  response.setHeader("Access-Control-Allow-Origin", origin || "*");
+  response.setHeader("Vary", "Origin");
+  if (!origin) {
+    response.setHeader("Access-Control-Allow-Origin", serverEnv.app.frontendOrigin);
+  } else if (originAllowed(origin)) {
+    response.setHeader("Access-Control-Allow-Origin", origin);
+  }
   response.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   response.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
   response.setHeader("Access-Control-Max-Age", "86400");
+  return !origin || originAllowed(origin);
 }
 
 function sendJson(response: ServerResponse, status: number, payload: unknown) {
@@ -136,7 +147,13 @@ async function handleGetReportPdf(reportId: string, response: ServerResponse) {
 }
 
 async function handleRequest(request: IncomingMessage, response: ServerResponse) {
-  setCors(request, response);
+  if (!setCors(request, response)) {
+    sendJson(response, 403, {
+      error: "CORS_ORIGIN_DENIED",
+      message: "Origin is not allowed by BACKEND_CORS_ORIGINS.",
+    });
+    return;
+  }
 
   if (request.method === "OPTIONS") {
     response.writeHead(204);

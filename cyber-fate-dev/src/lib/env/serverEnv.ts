@@ -83,6 +83,13 @@ function readImageOutputFormat() {
   return "png" satisfies ImageOutputFormat;
 }
 
+function readCsvEnv(name: string) {
+  return (readEnv(name) ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 export const serverEnv = {
   cyberFate: {
     get llmMode() {
@@ -95,6 +102,24 @@ export const serverEnv = {
   app: {
     get baseUrl() {
       return readEnv("APP_BASE_URL") ?? "http://localhost:3000";
+    },
+    get frontendOrigin() {
+      return readEnv("FRONTEND_ORIGIN") ?? "http://localhost:3000";
+    },
+    get frontendPort() {
+      return readEnv("FRONTEND_PORT") ?? readEnv("PORT") ?? "3000";
+    },
+  },
+  backend: {
+    get corsOrigins() {
+      const configured = readCsvEnv("BACKEND_CORS_ORIGINS");
+      if (configured.length > 0) return configured;
+
+      return Array.from(new Set([
+        serverEnv.app.frontendOrigin,
+        `http://localhost:${serverEnv.app.frontendPort}`,
+        `http://127.0.0.1:${serverEnv.app.frontendPort}`,
+      ]));
     },
   },
   openAI: {
