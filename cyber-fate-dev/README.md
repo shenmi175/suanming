@@ -7,6 +7,7 @@
 ## 已完成能力
 
 - Next.js App Router + TypeScript + Tailwind CSS。
+- 前后端分离运行：Next frontend 默认 `3000`，Node backend API 默认 `4000`。
 - 访谈式 intake 页面，使用 React Hook Form + Zod 校验。
 - 生成进度页，展示 Interviewer / Researcher / Fusion / Copywriter / Image Director / Reviewer 六个步骤。
 - PerceptLeap API 多角色管线：Interviewer 与 Researcher 并行启动；报告生成后 Image Director 与 Reviewer 并行执行。
@@ -16,7 +17,7 @@
 - 印章系统：按模块与关注领域选择印章。
 - 报告预览页：`/report/[id]`。
 - 打印页：`/report/[id]/print`。
-- PDF 下载接口：`/api/reports/[id]/pdf`，使用 Playwright；若 Playwright 浏览器未安装，会尝试本机 Chrome/Edge。
+- PDF 下载接口：backend `/api/reports/[id]/pdf`，使用 Playwright；若 Playwright 浏览器未安装，会尝试本机 Chrome/Edge。
 - 测试覆盖核心 schema、signals、PerceptLeap JSON 解析、印章与 PDF HTML renderer。
 
 ## 本地启动
@@ -52,11 +53,14 @@ corepack pnpm install
 corepack pnpm dev
 ```
 
-打开：
+`pnpm dev` 会同时启动：
 
 ```text
-http://localhost:3000
+frontend: http://localhost:3000
+backend:  http://localhost:4000
 ```
+
+首次启动会自动从 `.env.example` 创建 `.env.local`，你只需要把 API key 填进去。
 
 ## Docker 一键启动
 
@@ -82,7 +86,8 @@ docker compose up --build
 启动后访问：
 
 ```text
-http://localhost:3000
+frontend: http://localhost:3000
+backend:  http://localhost:4000
 ```
 
 如果 Docker 报 `dockerDesktopLinuxEngine` 连接错误，先启动 Docker Desktop，再重试。若 3000 端口被占用，可在上一层目录运行：
@@ -158,6 +163,16 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=C:\Program Files\Google\Chrome\Application\c
 
 ```env
 CYBER_FATE_ENV_SECRET=
+
+FRONTEND_PORT=3000
+BACKEND_PORT=4000
+FRONTEND_HOST=0.0.0.0
+BACKEND_HOST=0.0.0.0
+FRONTEND_ORIGIN=http://localhost:3000
+BACKEND_API_BASE_URL=http://127.0.0.1:4000
+NEXT_PUBLIC_BACKEND_PORT=4000
+NEXT_PUBLIC_API_BASE_URL=
+
 OPENAI_API_KEY=
 OPENAI_API_KEY_ENCRYPTED=
 OPENAI_MODEL_DEFAULT=

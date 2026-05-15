@@ -86,18 +86,49 @@ if [[ ! -f "$APP_DIR/package.json" ]]; then
   exit 1
 fi
 
+ensure_env_file() {
+  local file="$1"
+  local example="$2"
+  if [[ -f "$file" || ! -f "$example" ]]; then
+    return
+  fi
+
+  cp "$example" "$file"
+  echo "Created env file: $file"
+  echo "Fill API keys in this file before model generation."
+}
+
 load_env_file() {
   local file="$1"
+  local line name value
   if [[ ! -f "$file" ]]; then
     return
   fi
 
   echo "Loading env file: $file"
-  set -a
-  # shellcheck disable=SC1090
-  . "$file"
-  set +a
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    [[ -z "$line" || "$line" == \#* ]] && continue
+    [[ "$line" == export\ * ]] && line="${line#export }"
+    [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]] || continue
+    name="${BASH_REMATCH[1]}"
+    value="${BASH_REMATCH[2]}"
+    value="${value#"${value%%[![:space:]]*}"}"
+    value="${value%"${value##*[![:space:]]}"}"
+    if [[ "$value" == \"*\" && "$value" == *\" ]]; then
+      value="${value:1:${#value}-2}"
+    elif [[ "$value" == \'*\' && "$value" == *\' ]]; then
+      value="${value:1:${#value}-2}"
+    fi
+    [[ -z "$value" ]] && continue
+    [[ -n "${!name:-}" ]] && continue
+    export "$name=$value"
+  done < "$file"
 }
+
+ensure_env_file "$ROOT_DIR/.env" "$ROOT_DIR/.env.example"
+ensure_env_file "$APP_DIR/.env.local" "$APP_DIR/.env.example"
 
 load_env_file "$ROOT_DIR/.env"
 load_env_file "$ROOT_DIR/.env.local"
@@ -256,23 +287,29 @@ install_browser_if_needed() {
 start_app() {
   cd "$APP_DIR"
 
+  export FRONTEND_PORT="$PORT"
+  export BACKEND_PORT="${BACKEND_PORT:-4000}"
   export APP_BASE_URL="http://localhost:$PORT"
+  export BACKEND_API_BASE_URL="${BACKEND_API_BASE_URL:-http://127.0.0.1:$BACKEND_PORT}"
+  export NEXT_PUBLIC_BACKEND_PORT="${NEXT_PUBLIC_BACKEND_PORT:-$BACKEND_PORT}"
   export ENABLE_OPENAI="${ENABLE_OPENAI:-false}"
   export ENABLE_PERCEPTLEAP="${ENABLE_PERCEPTLEAP:-true}"
   export CYBER_FATE_LLM_MODE="${CYBER_FATE_LLM_MODE:-perceptleap}"
 
   echo ""
-  echo "Cyber Fate will listen on:"
+  echo "Cyber Fate frontend will listen on:"
   echo "  http://0.0.0.0:$PORT"
+  echo "Cyber Fate backend will listen on:"
+  echo "  http://0.0.0.0:$BACKEND_PORT"
   echo "From the Ubuntu VM itself:"
   echo "  http://localhost:$PORT"
   echo ""
 
   if [[ "$MODE" == "development" ]]; then
-    ./node_modules/.bin/next dev -H 0.0.0.0 -p "$PORT"
+    pnpm dev
   else
     pnpm build
-    ./node_modules/.bin/next start -H 0.0.0.0 -p "$PORT"
+    pnpm start
   fi
 }
 

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, CircleDashed, Clipboard, Loader2, X } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { backendApiUrl } from "@/lib/frontend/backendApi";
 import { defaultIntakeProfile, IntakeProfileSchema } from "@/lib/schemas/intake";
 
 const steps = [
@@ -40,7 +41,7 @@ export function GenerateClient() {
       try {
         const raw = sessionStorage.getItem("cyberFateIntake");
         const profile = raw ? IntakeProfileSchema.parse(JSON.parse(raw)) : defaultIntakeProfile;
-        const response = await fetch("/api/reports", {
+        const response = await fetch(backendApiUrl("/api/reports", "browser"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(profile),

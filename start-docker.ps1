@@ -9,6 +9,8 @@ $ErrorActionPreference = "Stop"
 
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $Root
+$InitialEnvNames = @{}
+Get-ChildItem Env: | ForEach-Object { $InitialEnvNames[$_.Name] = $true }
 
 function Import-EnvFile {
   param([string] $Path)
@@ -38,9 +40,33 @@ function Import-EnvFile {
     ) {
       $value = $value.Substring(1, $value.Length - 2)
     }
+    if ($InitialEnvNames.ContainsKey($name)) {
+      continue
+    }
+    if ([string]::IsNullOrWhiteSpace($value)) {
+      continue
+    }
     [Environment]::SetEnvironmentVariable($name, $value, "Process")
   }
 }
+
+function Ensure-EnvFile {
+  param(
+    [string] $Path,
+    [string] $ExamplePath
+  )
+
+  if ((Test-Path $Path) -or -not (Test-Path $ExamplePath)) {
+    return
+  }
+
+  Copy-Item -LiteralPath $ExamplePath -Destination $Path
+  Write-Host "Created env file: $Path"
+  Write-Host "Fill API keys in this file before model generation."
+}
+
+Ensure-EnvFile (Join-Path $Root ".env") (Join-Path $Root ".env.example")
+Ensure-EnvFile (Join-Path $Root "cyber-fate-dev\.env.local") (Join-Path $Root "cyber-fate-dev\.env.example")
 
 Import-EnvFile (Join-Path $Root ".env")
 Import-EnvFile (Join-Path $Root ".env.local")

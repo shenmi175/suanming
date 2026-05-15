@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import { ReportPrint } from "@/components/report/ReportPrint";
-import { getReport } from "@/lib/report/reportStore";
+import { getReportFromBackend } from "@/lib/frontend/backendApi";
 
 export default async function ReportPrintPage({ params }: { params: { id: string } }) {
-  const report = await getReport(params.id);
+  const report = await getReportFromBackend(params.id);
   if (!report) notFound();
 
   return <ReportPrint report={report} />;

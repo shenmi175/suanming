@@ -16,7 +16,10 @@ src/lib/llm/perceptLeapStructuredOutput.ts
 src/lib/llm/perceptLeapPipeline.ts
 src/lib/agents/runCyberFatePipeline.ts
 src/lib/env/serverEnv.ts
+src/backend/server.ts
 ```
+
+Next frontend 不再暴露 `/api/reports` 路由；报告生成、读取、PDF 下载都由独立 backend 进程提供。
 
 默认：
 

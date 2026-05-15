@@ -2,7 +2,9 @@
 
 ## 模式选择
 
-入口：`src/lib/agents/runCyberFatePipeline.ts`
+HTTP 入口：`src/backend/server.ts`
+
+模型编排入口：`src/lib/agents/runCyberFatePipeline.ts`
 
 ```text
 CYBER_FATE_LLM_MODE=perceptleap + ENABLE_PERCEPTLEAP=true + PERCEPTLEAP_API_KEY 或 PERCEPTLEAP_API_KEY_ENCRYPTED -> PerceptLeap Responses API
@@ -12,7 +14,7 @@ ENABLE_OPENAI=true + CYBER_FATE_LLM_MODE=openai-direct + OPENAI_API_KEY 或 OPEN
 
 所有运行时配置集中在 `src/lib/env/serverEnv.ts`，加密 API key 需要同时提供 `CYBER_FATE_ENV_SECRET`。
 
-任何 PerceptLeap/OpenAI 调用失败都会返回错误，不会生成本地替代报告。
+任何 PerceptLeap/OpenAI 调用失败都会由 backend API 返回错误，不会生成本地替代报告。Next frontend 只通过 HTTP 调 backend，不直接调用模型 SDK。
 
 ## 角色输入输出
 

@@ -1,7 +1,8 @@
-import { Download, Printer } from "lucide-react";
+import { Printer } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { CyberFateReport } from "@/lib/report/reportSchema";
+import { PdfDownloadButton } from "./PdfDownloadButton";
 import { Seal } from "./Seal";
 
 export function ReportPreview({ report }: { report: CyberFateReport }) {
@@ -22,13 +23,7 @@ export function ReportPreview({ report }: { report: CyberFateReport }) {
               <Printer className="h-4 w-4" />
               打印版
             </Link>
-            <Link
-              href={`/api/reports/${report.id}/pdf`}
-              className="inline-flex h-11 items-center gap-2 rounded-md bg-cinnabar px-4 text-sm font-semibold text-paper hover:bg-[#ef5a43]"
-            >
-              <Download className="h-4 w-4" />
-              下载 PDF
-            </Link>
+            <PdfDownloadButton reportId={report.id} />
           </div>
         </div>
       </section>

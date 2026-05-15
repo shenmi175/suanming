@@ -3,21 +3,36 @@
 ## 目标闭环
 
 ```text
-Landing -> Intake -> Generate Pipeline -> Report Preview -> Print Layout -> PDF Download
+Frontend Landing -> Intake -> Generate Pipeline -> Backend API -> Report Preview -> Print Layout -> PDF Download
 ```
 
 第一版优先保证本地端到端可演示，但用户报告生成必须走模型。默认使用 `CYBER_FATE_LLM_MODE=perceptleap`；缺少 key、代理失败或模型输出不合规时，API 返回错误，生成页右下角显示可复制反馈信息，不自动生成本地替代报告。
+
+## 部署形态
+
+项目已拆成前后端分离的两个运行进程：
+
+```text
+frontend: Next.js App Router, 默认 http://localhost:3000
+backend:  Node HTTP API,    默认 http://localhost:4000
+```
+
+前端不直接 import 模型、PDF、报告存储模块；浏览器和服务端页面都通过 backend API 访问数据。Docker/Ubuntu 启动脚本会同时启动两个进程。
 
 ## Web 层
 
 - `/`：产品首页与样例入口。
 - `/intake`：访谈式表单，React Hook Form + Zod 校验。
-- `/generate`：展示六个 agent 步骤，并调用 `/api/reports`。
+- `/generate`：展示六个 agent 步骤，并调用 backend `/api/reports`。
 - `/report/[id]`：在线报告预览。
 - `/report/[id]/print`：专门给打印/PDF 使用的页面布局。
-- `/api/reports`：创建报告，保存本地 JSON。
-- `/api/reports/[id]`：读取报告 JSON。
-- `/api/reports/[id]/pdf`：使用 Playwright 生成 PDF。
+
+## Backend API
+
+- `GET /health`：backend 健康检查。
+- `POST /api/reports`：创建报告，保存本地 JSON。
+- `GET /api/reports/:id`：读取报告 JSON。
+- `GET /api/reports/:id/pdf`：使用 Playwright 生成 PDF。
 
 ## 核心模块
 
@@ -32,6 +47,8 @@ src/lib/llm/perceptLeapClient.ts
 src/lib/llm/perceptLeapPipeline.ts
 src/lib/agents/runCyberFatePipeline.ts
 src/lib/pdf/*
+src/backend/server.ts           独立 backend API 入口
+src/lib/frontend/backendApi.ts   frontend API client
 ```
 
 ## Agent Pipeline

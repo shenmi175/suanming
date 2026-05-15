@@ -8,6 +8,7 @@ cyber-fate-dev/.next/
 out/
 dist/
 coverage/
+*.tsbuildinfo
 
 # Local runtime data
 .cyber-fate-data/
@@ -15,6 +16,7 @@ cyber-fate-dev/.cyber-fate-data/
 *.log
 cyber-fate-dev/.next-dev.log
 cyber-fate-dev/.next-dev.err.log
+cyber-fate-dev/public/runtime-config.js
 
 # Environment files
 .env

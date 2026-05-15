@@ -52,7 +52,14 @@ bash start-ubuntu.sh --port 3001
 bash start-ubuntu.sh --dev
 ```
 
-脚本会安装 Node.js 22、pnpm、项目依赖，并在没有系统 Chromium/Chrome 时安装 Playwright Chromium。启动后在虚拟机内访问 `http://localhost:3000`；宿主机访问需要确认虚拟机网络和端口转发设置。
+脚本会安装 Node.js 22、pnpm、项目依赖，并在没有系统 Chromium/Chrome 时安装 Playwright Chromium。启动后会同时运行：
+
+```text
+frontend: http://localhost:3000
+backend:  http://localhost:4000
+```
+
+宿主机访问虚拟机时，需要确认 3000 和 4000 两个端口都已转发或放行。
 
 ## Docker 一键启动
 
@@ -78,7 +85,8 @@ start-docker.cmd
 启动后打开：
 
 ```text
-http://localhost:3000
+frontend: http://localhost:3000
+backend:  http://localhost:4000
 ```
 
 如果看到类似下面的错误，说明 Docker Desktop 没有启动，先打开 Docker Desktop，等左下角显示 engine running 后再执行启动命令：
@@ -188,7 +196,14 @@ docker compose up --build
 copy .env.example .env
 ```
 
-`start-docker.ps1` 会自动加载根目录 `.env` / `.env.local` 以及 `cyber-fate-dev\.env` / `.env.local`。
+`start-docker.ps1` 和 `start-ubuntu.sh` 如果发现没有 env 文件，会自动从模板创建：
+
+```text
+.env
+cyber-fate-dev/.env.local
+```
+
+这些文件被 `.gitignore` 忽略，不会上传到仓库；你在里面配置 API key、端口、代理即可。
 
 启用 PerceptLeap：
 

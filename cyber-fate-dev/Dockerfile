@@ -81,6 +81,10 @@ ENV ENABLE_PERCEPTLEAP=true
 ENV ENABLE_PERCEPTLEAP_IMAGE=false
 ENV CYBER_FATE_LLM_MODE=perceptleap
 ENV APP_BASE_URL=http://localhost:3000
+ENV FRONTEND_PORT=3000
+ENV BACKEND_PORT=4000
+ENV BACKEND_API_BASE_URL=http://127.0.0.1:4000
+ENV NEXT_PUBLIC_BACKEND_PORT=4000
 ENV HTTP_PROXY=${HTTP_PROXY}
 ENV HTTPS_PROXY=${HTTPS_PROXY}
 ENV NO_PROXY=${NO_PROXY}
@@ -103,10 +107,14 @@ COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/content ./content
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
 COPY --from=builder /app/next.config.mjs ./next.config.mjs
 
 RUN mkdir -p /app/.cyber-fate-data/reports
 
 EXPOSE 3000
+EXPOSE 4000
 
-CMD ["node_modules/.bin/next", "start", "-H", "0.0.0.0", "-p", "3000"]
+CMD ["node", "scripts/run-start.mjs"]
