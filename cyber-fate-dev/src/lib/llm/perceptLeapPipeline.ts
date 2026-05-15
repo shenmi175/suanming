@@ -22,6 +22,7 @@ import { generatePerceptLeapImage } from "./perceptLeapClient";
 import { perceptLeapRoleModelConfig, type AgentRole } from "./modelConfig";
 import { generatePerceptLeapJson } from "./perceptLeapStructuredOutput";
 import type { PipelineArtifact } from "@/lib/agents/pipelineTypes";
+import { serverEnv } from "@/lib/env/serverEnv";
 
 type SignalBundle = ReturnType<typeof calculateFateSignals>;
 
@@ -324,7 +325,7 @@ export async function runPerceptLeapPipeline(profile: IntakeProfile) {
     },
   });
 
-  if (process.env.ENABLE_PERCEPTLEAP_IMAGE === "true" || process.env.GENERATE_REPORT_IMAGE === "true") {
+  if (serverEnv.perceptLeap.enableImage || serverEnv.perceptLeap.generateReportImage) {
     const image = await generatePerceptLeapImage({
       prompt: visual.output.prompt,
     });

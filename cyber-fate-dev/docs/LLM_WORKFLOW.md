@@ -5,10 +5,12 @@
 入口：`src/lib/agents/runCyberFatePipeline.ts`
 
 ```text
-CYBER_FATE_LLM_MODE=perceptleap + ENABLE_PERCEPTLEAP=true + PERCEPTLEAP_API_KEY -> PerceptLeap Responses API
-ENABLE_OPENAI=true + CYBER_FATE_LLM_MODE=openai-direct -> OpenAI Responses Structured Output
+CYBER_FATE_LLM_MODE=perceptleap + ENABLE_PERCEPTLEAP=true + PERCEPTLEAP_API_KEY 或 PERCEPTLEAP_API_KEY_ENCRYPTED -> PerceptLeap Responses API
+ENABLE_OPENAI=true + CYBER_FATE_LLM_MODE=openai-direct + OPENAI_API_KEY 或 OPENAI_API_KEY_ENCRYPTED -> OpenAI Responses Structured Output
 缺少可用 API key 或 API 调用失败 -> API 错误，生成页右下角 toast 展示 traceId
 ```
+
+所有运行时配置集中在 `src/lib/env/serverEnv.ts`，加密 API key 需要同时提供 `CYBER_FATE_ENV_SECRET`。
 
 任何 PerceptLeap/OpenAI 调用失败都会返回错误，不会生成本地替代报告。
 

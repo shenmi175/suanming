@@ -86,6 +86,28 @@ if [[ ! -f "$APP_DIR/package.json" ]]; then
   exit 1
 fi
 
+load_env_file() {
+  local file="$1"
+  if [[ ! -f "$file" ]]; then
+    return
+  fi
+
+  echo "Loading env file: $file"
+  set -a
+  # shellcheck disable=SC1090
+  . "$file"
+  set +a
+}
+
+load_env_file "$ROOT_DIR/.env"
+load_env_file "$ROOT_DIR/.env.local"
+load_env_file "$APP_DIR/.env"
+load_env_file "$APP_DIR/.env.local"
+
+if [[ -n "${APP_PORT:-}" && "$PORT" == "3000" ]]; then
+  PORT="$APP_PORT"
+fi
+
 if [[ -n "$PROXY" ]]; then
   export HTTP_PROXY="$PROXY"
   export HTTPS_PROXY="$PROXY"

@@ -1,6 +1,5 @@
 import { fetch as undiciFetch, ProxyAgent, type Dispatcher } from "undici";
-
-const defaultBaseUrl = "https://api.perceptleap.com/v1";
+import { serverEnv } from "@/lib/env/serverEnv";
 
 export interface PerceptLeapTextOptions {
   model: string;
@@ -43,13 +42,13 @@ interface PerceptLeapImagePayload {
 }
 
 function apiKey() {
-  const key = process.env.PERCEPTLEAP_API_KEY;
-  if (!key) throw new Error("Missing PERCEPTLEAP_API_KEY.");
+  const key = serverEnv.perceptLeap.apiKey;
+  if (!key) throw new Error("Missing PERCEPTLEAP_API_KEY or PERCEPTLEAP_API_KEY_ENCRYPTED.");
   return key;
 }
 
 function apiUrl(pathname: string) {
-  const base = process.env.PERCEPTLEAP_BASE_URL || defaultBaseUrl;
+  const base = serverEnv.perceptLeap.baseUrl;
   return `${base.replace(/\/$/, "")}${pathname}`;
 }
 
@@ -57,7 +56,7 @@ let proxyDispatcher: Dispatcher | undefined;
 let proxyDispatcherUrl: string | undefined;
 
 function getDispatcher() {
-  const proxyUrl = process.env.PERCEPTLEAP_PROXY_URL || process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
+  const proxyUrl = serverEnv.perceptLeap.proxyUrl || serverEnv.network.httpsProxy || serverEnv.network.httpProxy;
   if (!proxyUrl) return undefined;
 
   if (proxyDispatcher && proxyDispatcherUrl === proxyUrl) return proxyDispatcher;
@@ -67,8 +66,7 @@ function getDispatcher() {
 }
 
 function maxRetries() {
-  const configured = Number(process.env.PERCEPTLEAP_MAX_RETRIES);
-  return Number.isFinite(configured) && configured >= 0 ? configured : 2;
+  return serverEnv.perceptLeap.maxRetries;
 }
 
 function sleep(ms: number) {
@@ -159,13 +157,13 @@ export async function callPerceptLeapText(options: PerceptLeapTextOptions) {
 }
 
 export async function generatePerceptLeapImage(options: PerceptLeapImageOptions) {
-  const model = options.model || process.env.PERCEPTLEAP_IMAGE_MODEL || "gpt-image-2";
-  const outputFormat = options.outputFormat || "png";
+  const model = options.model || serverEnv.perceptLeap.imageModel;
+  const outputFormat = options.outputFormat || serverEnv.perceptLeap.imageOutputFormat;
   const payload = await postJson<PerceptLeapImagePayload>("/images/generations", {
     model,
     prompt: options.prompt,
-    size: options.size || process.env.PERCEPTLEAP_IMAGE_SIZE || "1024x1024",
-    quality: options.quality || process.env.PERCEPTLEAP_IMAGE_QUALITY || "low",
+    size: options.size || serverEnv.perceptLeap.imageSize,
+    quality: options.quality || serverEnv.perceptLeap.imageQuality,
     output_format: outputFormat,
   });
 

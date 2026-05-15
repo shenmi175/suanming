@@ -1,10 +1,11 @@
 import { chromium } from "playwright";
 import { existsSync } from "node:fs";
 import type { CyberFateReport } from "@/lib/report/reportSchema";
+import { serverEnv } from "@/lib/env/serverEnv";
 import { renderReportHtml } from "./renderReportHtml";
 
 function findSystemBrowser() {
-  const configured = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
+  const configured = serverEnv.playwright.chromiumExecutablePath;
   const candidates = [
     configured,
     "/usr/bin/chromium",

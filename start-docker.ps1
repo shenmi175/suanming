@@ -10,10 +10,51 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $Root
 
+function Import-EnvFile {
+  param([string] $Path)
+
+  if (-not (Test-Path $Path)) {
+    return
+  }
+
+  Write-Host "Loading env file: $Path"
+  $lines = Get-Content -Encoding UTF8 $Path
+  foreach ($line in $lines) {
+    $trimmed = $line.Trim()
+    if ([string]::IsNullOrWhiteSpace($trimmed) -or $trimmed.StartsWith("#")) {
+      continue
+    }
+
+    $match = [regex]::Match($trimmed, "^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)=(.*)$")
+    if (-not $match.Success) {
+      continue
+    }
+
+    $name = $match.Groups[1].Value
+    $value = $match.Groups[2].Value.Trim()
+    if (
+      ($value.StartsWith('"') -and $value.EndsWith('"')) -or
+      ($value.StartsWith("'") -and $value.EndsWith("'"))
+    ) {
+      $value = $value.Substring(1, $value.Length - 2)
+    }
+    [Environment]::SetEnvironmentVariable($name, $value, "Process")
+  }
+}
+
+Import-EnvFile (Join-Path $Root ".env")
+Import-EnvFile (Join-Path $Root ".env.local")
+Import-EnvFile (Join-Path $Root "cyber-fate-dev\.env")
+Import-EnvFile (Join-Path $Root "cyber-fate-dev\.env.local")
+
+if (-not $PSBoundParameters.ContainsKey("Port") -and $env:APP_PORT) {
+  $Port = [int] $env:APP_PORT
+}
+
 $env:APP_PORT = "$Port"
 if ($UbuntuBase) {
   $env:DOCKERFILE = "Dockerfile.ubuntu"
-} else {
+} elseif (-not $env:DOCKERFILE) {
   $env:DOCKERFILE = "Dockerfile"
 }
 

@@ -2,7 +2,7 @@
 
 ## 关键原则
 
-1. API key 只存在服务端环境变量中。
+1. API key 只存在服务端环境变量中，推荐使用 `*_API_KEY_ENCRYPTED` 加密写法。
 2. 浏览器不直接调用 PerceptLeap/OpenAI。
 3. 用户报告必须由模型生成；缺少 key、代理失败或 schema 校验失败时直接返回错误。
 4. 所有模型输出必须经过 Zod validation。
@@ -15,6 +15,7 @@ src/lib/llm/perceptLeapClient.ts
 src/lib/llm/perceptLeapStructuredOutput.ts
 src/lib/llm/perceptLeapPipeline.ts
 src/lib/agents/runCyberFatePipeline.ts
+src/lib/env/serverEnv.ts
 ```
 
 默认：
@@ -22,15 +23,19 @@ src/lib/agents/runCyberFatePipeline.ts
 ```env
 CYBER_FATE_LLM_MODE=perceptleap
 ENABLE_PERCEPTLEAP=true
-PERCEPTLEAP_API_KEY=sk-...
+CYBER_FATE_ENV_SECRET=<long-passphrase>
+PERCEPTLEAP_API_KEY_ENCRYPTED=enc:v1:...
 ```
 
 可选单模型路径：
 
 ```env
 CYBER_FATE_LLM_MODE=openai-direct
-OPENAI_API_KEY=sk-...
+CYBER_FATE_ENV_SECRET=<long-passphrase>
+OPENAI_API_KEY_ENCRYPTED=enc:v1:...
 ```
+
+本地个人调试仍可使用 `PERCEPTLEAP_API_KEY` / `OPENAI_API_KEY` 明文变量；如果同时存在明文与加密值，加密值优先。
 
 ## 并行策略
 

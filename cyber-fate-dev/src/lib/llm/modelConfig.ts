@@ -1,3 +1,5 @@
+import { serverEnv } from "@/lib/env/serverEnv";
+
 export type AgentRole = "interviewer" | "researcher" | "fusion" | "copywriter" | "reviewer" | "image-director";
 export type LlmMode = "perceptleap" | "openai-direct";
 
@@ -8,38 +10,38 @@ export interface RoleModelConfig {
   maxOutputTokens?: number;
 }
 
-const defaultModel = process.env.OPENAI_MODEL_DEFAULT || "gpt-4.1-mini";
-const perceptLeapTextModel = process.env.PERCEPTLEAP_TEXT_MODEL || "gpt-5.4";
+const defaultModel = serverEnv.openAI.modelDefault;
+const perceptLeapTextModel = serverEnv.perceptLeap.textModel;
 
 export const roleModelConfig: Record<AgentRole, RoleModelConfig> = {
   interviewer: {
     role: "interviewer",
-    model: process.env.OPENAI_MODEL_INTERVIEWER || defaultModel,
+    model: serverEnv.openAI.modelInterviewer || defaultModel,
     temperature: 0.2,
   },
   researcher: {
     role: "researcher",
-    model: process.env.OPENAI_MODEL_RESEARCHER || defaultModel,
+    model: serverEnv.openAI.modelResearcher || defaultModel,
     temperature: 0.2,
   },
   fusion: {
     role: "fusion",
-    model: process.env.OPENAI_MODEL_FUSION || defaultModel,
+    model: serverEnv.openAI.modelFusion || defaultModel,
     temperature: 0.4,
   },
   copywriter: {
     role: "copywriter",
-    model: process.env.OPENAI_MODEL_COPYWRITER || defaultModel,
+    model: serverEnv.openAI.modelCopywriter || defaultModel,
     temperature: 0.7,
   },
   reviewer: {
     role: "reviewer",
-    model: process.env.OPENAI_MODEL_REVIEWER || defaultModel,
+    model: serverEnv.openAI.modelReviewer || defaultModel,
     temperature: 0.1,
   },
   "image-director": {
     role: "image-director",
-    model: process.env.OPENAI_MODEL_IMAGE_DIRECTOR || defaultModel,
+    model: serverEnv.openAI.modelImageDirector || defaultModel,
     temperature: 0.5,
   },
 };
@@ -47,43 +49,43 @@ export const roleModelConfig: Record<AgentRole, RoleModelConfig> = {
 export const perceptLeapRoleModelConfig: Record<AgentRole, RoleModelConfig> = {
   interviewer: {
     role: "interviewer",
-    model: process.env.PERCEPTLEAP_MODEL_INTERVIEWER || perceptLeapTextModel,
+    model: serverEnv.perceptLeap.modelInterviewer || perceptLeapTextModel,
     temperature: 0.2,
     maxOutputTokens: 2400,
   },
   researcher: {
     role: "researcher",
-    model: process.env.PERCEPTLEAP_MODEL_RESEARCHER || perceptLeapTextModel,
+    model: serverEnv.perceptLeap.modelResearcher || perceptLeapTextModel,
     temperature: 0.2,
     maxOutputTokens: 3600,
   },
   fusion: {
     role: "fusion",
-    model: process.env.PERCEPTLEAP_MODEL_FUSION || perceptLeapTextModel,
+    model: serverEnv.perceptLeap.modelFusion || perceptLeapTextModel,
     temperature: 0.35,
     maxOutputTokens: 4200,
   },
   copywriter: {
     role: "copywriter",
-    model: process.env.PERCEPTLEAP_MODEL_COPYWRITER || perceptLeapTextModel,
+    model: serverEnv.perceptLeap.modelCopywriter || perceptLeapTextModel,
     temperature: 0.75,
     maxOutputTokens: 14000,
   },
   reviewer: {
     role: "reviewer",
-    model: process.env.PERCEPTLEAP_MODEL_REVIEWER || perceptLeapTextModel,
+    model: serverEnv.perceptLeap.modelReviewer || perceptLeapTextModel,
     temperature: 0.1,
     maxOutputTokens: 2600,
   },
   "image-director": {
     role: "image-director",
-    model: process.env.PERCEPTLEAP_MODEL_IMAGE_DIRECTOR || perceptLeapTextModel,
+    model: serverEnv.perceptLeap.modelImageDirector || perceptLeapTextModel,
     temperature: 0.45,
     maxOutputTokens: 1800,
   },
 };
 
-export function normalizeLlmMode(rawMode = process.env.CYBER_FATE_LLM_MODE): LlmMode {
+export function normalizeLlmMode(rawMode = serverEnv.cyberFate.llmMode): LlmMode {
   const requested = (rawMode || "perceptleap").trim();
   if (requested === "perceptleap") return "perceptleap";
   if (requested === "openai-direct") return "openai-direct";
@@ -98,15 +100,15 @@ export function getEffectiveLlmMode(): LlmMode {
   const requested = normalizeLlmMode();
 
   if (requested === "perceptleap") {
-    if (!process.env.PERCEPTLEAP_API_KEY) {
-      throw new Error("缺少 PERCEPTLEAP_API_KEY。当前版本要求使用模型生成，不再自动降级到本地内容。");
+    if (!serverEnv.perceptLeap.apiKey) {
+      throw new Error("缺少 PERCEPTLEAP_API_KEY 或 PERCEPTLEAP_API_KEY_ENCRYPTED。当前版本要求使用模型生成，不再自动降级到本地内容。");
     }
     return "perceptleap";
   }
 
   if (requested === "openai-direct") {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error("缺少 OPENAI_API_KEY。openai-direct 模式要求可用模型 key。");
+    if (!serverEnv.openAI.apiKey) {
+      throw new Error("缺少 OPENAI_API_KEY 或 OPENAI_API_KEY_ENCRYPTED。openai-direct 模式要求可用模型 key。");
     }
     return "openai-direct";
   }

@@ -3,6 +3,7 @@ import { runCyberFatePipeline } from "@/lib/agents/runCyberFatePipeline";
 import { normalizeLlmMode } from "@/lib/llm/modelConfig";
 import { saveReport } from "@/lib/report/reportStore";
 import { IntakeProfileSchema } from "@/lib/schemas/intake";
+import { serverEnv } from "@/lib/env/serverEnv";
 import { ZodError } from "zod";
 
 function traceId() {
@@ -19,7 +20,7 @@ function safeResponseMode() {
   try {
     return normalizeLlmMode();
   } catch {
-    return process.env.CYBER_FATE_LLM_MODE || "unknown";
+    return serverEnv.cyberFate.llmMode || "unknown";
   }
 }
 

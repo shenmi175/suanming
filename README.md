@@ -182,6 +182,14 @@ docker compose up --build
 
 默认要求使用模型 API，不再自动降级到本地生成。没有 key 时，生成页会在右下角弹出错误反馈。
 
+推荐先复制环境模板：
+
+```powershell
+copy .env.example .env
+```
+
+`start-docker.ps1` 会自动加载根目录 `.env` / `.env.local` 以及 `cyber-fate-dev\.env` / `.env.local`。
+
 启用 PerceptLeap：
 
 ```powershell
@@ -205,5 +213,16 @@ $env:CYBER_FATE_LLM_MODE="openai-direct"
 $env:OPENAI_API_KEY="sk-..."
 docker compose up --build
 ```
+
+如需把 API key 加密后写入 env：
+
+```powershell
+$env:CYBER_FATE_ENV_SECRET="一段足够长的随机口令"
+$env:CYBER_FATE_SECRET_TO_ENCRYPT="sk-..."
+cd cyber-fate-dev
+node scripts/encrypt-env-secret.mjs
+```
+
+将输出写入 `PERCEPTLEAP_API_KEY_ENCRYPTED` 或 `OPENAI_API_KEY_ENCRYPTED`，并保留相同的 `CYBER_FATE_ENV_SECRET`。
 
 报告数据保存在 Docker volume：`cyber_fate_reports`。
