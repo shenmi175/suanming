@@ -240,4 +240,15 @@ node scripts/encrypt-env-secret.mjs
 
 将输出写入 `PERCEPTLEAP_API_KEY_ENCRYPTED` 或 `OPENAI_API_KEY_ENCRYPTED`，并保留相同的 `CYBER_FATE_ENV_SECRET`。
 
-报告数据保存在 Docker volume：`cyber_fate_reports`。
+报告文件兼容数据保存在 Docker volume：`cyber_fate_reports`。Docker 默认还会启动 PostgreSQL，报告、未来用户资料和联网搜索缓存使用 `cyber_fate_postgres` volume。
+
+自托管搜索使用 SearXNG：
+
+```powershell
+docker compose up -d postgres searxng
+cd cyber-fate-dev
+$env:SEARXNG_BASE_URL="http://127.0.0.1:8080"
+corepack pnpm research:search "今日星座运势"
+```
+
+SearXNG 使用 AGPL-3.0-or-later 许可证；搜索到的网页内容版权归原发布方。项目只保存短摘录和模型摘要用于来源引用，不应转载全文。

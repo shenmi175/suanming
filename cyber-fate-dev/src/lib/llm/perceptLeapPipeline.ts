@@ -11,6 +11,7 @@ import {
 import { calculateFateSignals } from "@/lib/fate/signals";
 import { selectStamps } from "@/lib/fate/stamps";
 import { searchLocalKnowledge } from "@/lib/research/localKnowledge";
+import { collectWebResearchNotes } from "@/lib/research/webResearch";
 import { focusAreaLabels, IntakeProfileSchema, type FocusArea, type IntakeProfile } from "@/lib/schemas/intake";
 import {
   buildUncertaintyNotes,
@@ -163,6 +164,7 @@ export async function runPerceptLeapPipeline(profile: IntakeProfile) {
     query: profile.question ?? undefined,
     limit: 12,
   });
+  const webResearchPromise = collectWebResearchNotes(profile);
   const requiredStamps = selectStamps({ focusAreas: profile.focusAreas, reviewerPassed: true });
   const identity = ReportIdentitySchema.parse({
     id: reportId,
@@ -190,21 +192,26 @@ export async function runPerceptLeapPipeline(profile: IntakeProfile) {
     },
   });
 
-  const researchPromise = callRole({
+  const researchPromise = webResearchPromise.then(({ notes: webNotes, searches }) => callRole({
     role: "researcher",
     label: "PerceptLeap Researcher",
     schemaName: "ResearchOutput",
     zodSchema: ResearchOutputSchema,
     system:
-      "你是 Researcher。只能从 candidateNotes 中选择、排序和少量压缩 ResearchNote；不要编造新 id、source 或未经提供的玄学资料；不要写最终报告。",
+      "你是 Researcher。只能从 candidateNotes 中选择、排序和少量压缩 ResearchNote；不要编造新 id、source 或未经提供的玄学资料；不要写最终报告。联网资料只可摘要引用，不得大段复制网页原文。",
     user: {
       currentDate,
       profile,
       calculatedSignals: signals.calculatedSignals,
-      candidateNotes,
-      selectionTarget: "选择 6 到 10 条最适合本用户关注领域和 signals 的 notes。",
+      candidateNotes: [...candidateNotes, ...webNotes],
+      webResearchSummary: searches.map((search) => ({
+        query: search.query,
+        usableSources: search.notes.length,
+        copyrightNotice: search.copyrightNotice,
+      })),
+      selectionTarget: "选择 6 到 12 条最适合本用户关注领域和 signals 的 notes；如存在联网资料，优先保留来源清晰、质量分较高的条目。",
     },
-  });
+  }));
 
   const [interview, research] = await Promise.all([interviewPromise, researchPromise]);
   const artifacts: PipelineArtifact[] = [interview.artifact, research.artifact];

@@ -1,0 +1,42 @@
+# Cyber Fate local SearXNG instance.
+# SearXNG is AGPL-3.0-or-later; see https://github.com/searxng/searxng
+# Search result pages remain copyrighted by their original publishers. Cyber Fate
+# stores excerpts for summarization and source citation only; do not republish full articles.
+
+use_default_settings: true
+
+general:
+  instance_name: "Cyber Fate Local Search"
+
+search:
+  safe_search: 0
+  autocomplete: ""
+  default_lang: "zh-CN"
+  formats:
+    - html
+    - json
+
+server:
+  bind_address: "0.0.0.0"
+  port: 8080
+  secret_key: "change-this-local-searxng-secret-before-public-exposure"
+  limiter: false
+  image_proxy: false
+
+ui:
+  static_use_hash: true
+  query_in_title: true
+
+outgoing:
+  request_timeout: 10.0
+  max_request_timeout: 15.0
+  pool_connections: 100
+  pool_maxsize: 20
+
+engines:
+  - name: ahmia
+    disabled: true
+  - name: torch
+    disabled: true
+  - name: radio browser
+    disabled: true

@@ -242,8 +242,10 @@ pnpm check:architecture</code></pre>
   "mode": "perceptleap",
   "hint": "当前版本要求模型生成..."
 }</code></pre>
-        <p>后端已经具备基础成熟度：CORS allowlist、1MB 请求体限制、Zod 输入校验、API key 脱敏、模型错误不 fallback、本地 JSON 存储和 PDF 失败结构化返回。</p>
-        <p><span class="status warn">后续增强</span> 如果进入多人协作或公网部署，应继续增加鉴权、速率限制、持久化数据库、请求日志与 OpenAPI 导出。</p>
+        <p>后端已经具备基础成熟度：CORS allowlist、1MB 请求体限制、Zod 输入校验、API key 脱敏、模型错误不 fallback、PostgreSQL/本地文件双存储路径、PDF 失败结构化返回。</p>
+        <p>联网研究由自托管 <code>SearXNG</code> 提供搜索 URL，backend 抓取网页正文，经 Readability 清洗、质量评分、缓存后才进入 Researcher；低质量页面只记录错误，不喂给模型。</p>
+        <p><span class="status warn">版权边界</span> 联网资料只用于摘要、事实核对与来源引用；报告不得大段复制网页原文，应保留来源 URL 和检索时间。</p>
+        <p><span class="status warn">后续增强</span> 如果进入多人协作或公网部署，应继续增加鉴权、速率限制、请求日志与 OpenAPI 导出。</p>
       </section>
 
       <section id="env">
@@ -258,6 +260,9 @@ F:\project\suanming\cyber-fate-dev\.env.local</code></pre>
             <tr><td><code>BACKEND_PORT</code></td><td>backend API 端口。</td><td><code>4000</code></td></tr>
             <tr><td><code>FRONTEND_ORIGIN</code></td><td>backend 默认允许的前端 Origin。</td><td><code>http://localhost:3000</code></td></tr>
             <tr><td><code>BACKEND_CORS_ORIGINS</code></td><td>逗号分隔的 CORS allowlist；留空时允许 <code>FRONTEND_ORIGIN</code> 和当前 <code>FRONTEND_PORT</code> 的 localhost/127.0.0.1。</td><td>空</td></tr>
+            <tr><td><code>DATABASE_URL</code></td><td>PostgreSQL 连接串；配置后报告与搜索缓存写入数据库。</td><td>空</td></tr>
+            <tr><td><code>ENABLE_WEB_SEARCH</code></td><td>开启联网资料研究。</td><td><code>false</code></td></tr>
+            <tr><td><code>SEARXNG_BASE_URL</code></td><td>自托管 SearXNG 地址；Docker 内默认 <code>http://searxng:8080</code>，本机默认 <code>http://localhost:8080</code>。</td><td><code>http://localhost:8080</code></td></tr>
             <tr><td><code>PERCEPTLEAP_API_KEY</code></td><td>本地明文 PerceptLeap key。</td><td>空</td></tr>
             <tr><td><code>PERCEPTLEAP_API_KEY_ENCRYPTED</code></td><td>加密 PerceptLeap key，优先于明文。</td><td>空</td></tr>
             <tr><td><code>CYBER_FATE_ENV_SECRET</code></td><td>解密 <code>*_API_KEY_ENCRYPTED</code> 的口令。</td><td>空</td></tr>

@@ -6,6 +6,7 @@ import { serverEnv } from "@/lib/env/serverEnv";
 import { normalizeLlmMode } from "@/lib/llm/modelConfig";
 import { generateReportPdf } from "@/lib/pdf/generatePdf";
 import { getReport, saveReport } from "@/lib/report/reportStore";
+import { searchWebForQuery } from "@/lib/research/webResearch";
 import { IntakeProfileSchema } from "@/lib/schemas/intake";
 
 const defaultPort = 4000;
@@ -146,6 +147,35 @@ async function handleGetReportPdf(reportId: string, response: ServerResponse) {
   }
 }
 
+async function handleSearchResearch(url: URL, response: ServerResponse) {
+  const query = url.searchParams.get("q")?.trim();
+  if (!query) {
+    sendJson(response, 400, {
+      error: "MISSING_QUERY",
+      message: "请提供 q 查询参数。",
+    });
+    return;
+  }
+
+  try {
+    const limit = Number(url.searchParams.get("limit") || "");
+    const fetchLimit = Number(url.searchParams.get("fetchLimit") || "");
+    const result = await searchWebForQuery({
+      query,
+      limit: Number.isFinite(limit) && limit > 0 ? limit : undefined,
+      fetchLimit: Number.isFinite(fetchLimit) && fetchLimit > 0 ? fetchLimit : undefined,
+    });
+    sendJson(response, 200, result);
+  } catch (error) {
+    sendJson(response, 502, {
+      error: "WEB_RESEARCH_FAILED",
+      message: error instanceof Error ? sanitizeMessage(error.message) : "Unknown web research error.",
+      traceId: traceId(),
+      occurredAt: new Date().toISOString(),
+    });
+  }
+}
+
 async function handleRequest(request: IncomingMessage, response: ServerResponse) {
   if (!setCors(request, response)) {
     sendJson(response, 403, {
@@ -171,6 +201,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       mode: safeResponseMode(),
       timestamp: new Date().toISOString(),
     });
+    return;
+  }
+
+  if (request.method === "GET" && pathname === "/api/research/search") {
+    await handleSearchResearch(url, response);
     return;
   }
 

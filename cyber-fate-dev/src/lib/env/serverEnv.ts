@@ -23,6 +23,10 @@ function readNumberEnv(name: string, fallback: number) {
   return Number.isFinite(value) ? value : fallback;
 }
 
+function readIntegerEnv(name: string, fallback: number) {
+  return Math.trunc(readNumberEnv(name, fallback));
+}
+
 function deriveKey(secret: string) {
   return scryptSync(secret, encryptionSalt, 32);
 }
@@ -120,6 +124,14 @@ export const serverEnv = {
         `http://localhost:${serverEnv.app.frontendPort}`,
         `http://127.0.0.1:${serverEnv.app.frontendPort}`,
       ]));
+    },
+  },
+  database: {
+    get url() {
+      return readEnv("DATABASE_URL");
+    },
+    get enabled() {
+      return Boolean(readEnv("DATABASE_URL"));
     },
   },
   openAI: {
@@ -227,6 +239,57 @@ export const serverEnv = {
     },
     get noProxy() {
       return readEnv("NO_PROXY") ?? readEnv("no_proxy");
+    },
+  },
+  webResearch: {
+    get enabled() {
+      return readBooleanEnv("ENABLE_WEB_SEARCH", false);
+    },
+    get provider() {
+      return readEnv("WEB_RESEARCH_PROVIDER") ?? "searxng";
+    },
+    get required() {
+      return readBooleanEnv("WEB_RESEARCH_REQUIRED", false);
+    },
+    get minSources() {
+      return Math.max(0, readIntegerEnv("WEB_RESEARCH_MIN_SOURCES", 2));
+    },
+    get maxResults() {
+      return Math.max(1, readIntegerEnv("WEB_RESEARCH_MAX_RESULTS", 20));
+    },
+    get fetchLimit() {
+      return Math.max(1, readIntegerEnv("WEB_RESEARCH_FETCH_LIMIT", 12));
+    },
+    get searchCacheTtlHours() {
+      return Math.max(1, readIntegerEnv("WEB_RESEARCH_CACHE_TTL_HOURS", 24));
+    },
+    get pageCacheTtlHours() {
+      return Math.max(1, readIntegerEnv("WEB_PAGE_CACHE_TTL_HOURS", 168));
+    },
+    get fetchTimeoutMs() {
+      return Math.max(1000, readIntegerEnv("WEB_FETCH_TIMEOUT_MS", 12000));
+    },
+    get fetchMaxBytes() {
+      return Math.max(100000, readIntegerEnv("WEB_FETCH_MAX_BYTES", 1_500_000));
+    },
+    get fetchMaxChars() {
+      return Math.max(1000, readIntegerEnv("WEB_FETCH_MAX_CHARS", 14000));
+    },
+    get fetchProxyUrl() {
+      return readEnv("WEB_FETCH_PROXY_URL");
+    },
+    get fetchUserAgent() {
+      return readEnv("WEB_FETCH_USER_AGENT") ?? "CyberFateResearchBot/0.1 (+local self-hosted research; respects publisher rights)";
+    },
+    get searxngBaseUrl() {
+      return readEnv("SEARXNG_BASE_URL") ?? "http://localhost:8080";
+    },
+    get searxngLanguage() {
+      return readEnv("SEARXNG_SEARCH_LANGUAGE") ?? "zh-CN";
+    },
+    get copyrightNotice() {
+      return readEnv("WEB_RESEARCH_COPYRIGHT_NOTICE")
+        ?? "联网资料仅用于摘要、事实核对与来源引用；报告不得大段复制网页原文，请遵守原网站版权与使用条款。";
     },
   },
 };

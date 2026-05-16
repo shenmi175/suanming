@@ -10,10 +10,10 @@ services:
       args:
         HTTP_PROXY: "${HTTP_PROXY:-}"
         HTTPS_PROXY: "${HTTPS_PROXY:-}"
-        NO_PROXY: "${NO_PROXY:-localhost,127.0.0.1,::1}"
+        NO_PROXY: "${NO_PROXY:-localhost,127.0.0.1,::1,postgres,searxng}"
         http_proxy: "${http_proxy:-}"
         https_proxy: "${https_proxy:-}"
-        no_proxy: "${no_proxy:-localhost,127.0.0.1,::1}"
+        no_proxy: "${no_proxy:-localhost,127.0.0.1,::1,postgres,searxng}"
     ports:
       - "${APP_PORT:-3000}:3000"
       - "${BACKEND_PORT:-4000}:4000"
@@ -30,6 +30,7 @@ services:
       BACKEND_API_BASE_URL: "${BACKEND_API_BASE_URL:-http://127.0.0.1:4000}"
       NEXT_PUBLIC_BACKEND_PORT: "${NEXT_PUBLIC_BACKEND_PORT:-4000}"
       NEXT_PUBLIC_API_BASE_URL: "${NEXT_PUBLIC_API_BASE_URL:-}"
+      DATABASE_URL: "${DATABASE_URL:-postgresql://cyber_fate:cyber_fate_local@postgres:5432/cyber_fate}"
       CYBER_FATE_ENV_SECRET: "${CYBER_FATE_ENV_SECRET:-}"
       ENABLE_OPENAI: "${ENABLE_OPENAI:-false}"
       CYBER_FATE_LLM_MODE: "${CYBER_FATE_LLM_MODE:-perceptleap}"
@@ -62,20 +63,67 @@ services:
       OPENAI_MODEL_REVIEWER: "${OPENAI_MODEL_REVIEWER:-}"
       OPENAI_MODEL_IMAGE_DIRECTOR: "${OPENAI_MODEL_IMAGE_DIRECTOR:-}"
       ENABLE_WEB_SEARCH: "${ENABLE_WEB_SEARCH:-false}"
+      WEB_RESEARCH_PROVIDER: "${WEB_RESEARCH_PROVIDER:-searxng}"
+      WEB_RESEARCH_REQUIRED: "${WEB_RESEARCH_REQUIRED:-false}"
+      WEB_RESEARCH_MIN_SOURCES: "${WEB_RESEARCH_MIN_SOURCES:-2}"
+      WEB_RESEARCH_MAX_RESULTS: "${WEB_RESEARCH_MAX_RESULTS:-20}"
+      WEB_RESEARCH_FETCH_LIMIT: "${WEB_RESEARCH_FETCH_LIMIT:-12}"
+      WEB_RESEARCH_CACHE_TTL_HOURS: "${WEB_RESEARCH_CACHE_TTL_HOURS:-24}"
+      WEB_PAGE_CACHE_TTL_HOURS: "${WEB_PAGE_CACHE_TTL_HOURS:-168}"
+      WEB_FETCH_TIMEOUT_MS: "${WEB_FETCH_TIMEOUT_MS:-12000}"
+      WEB_FETCH_MAX_BYTES: "${WEB_FETCH_MAX_BYTES:-1500000}"
+      WEB_FETCH_MAX_CHARS: "${WEB_FETCH_MAX_CHARS:-14000}"
+      WEB_FETCH_PROXY_URL: "${WEB_FETCH_PROXY_URL:-}"
+      WEB_FETCH_USER_AGENT: "${WEB_FETCH_USER_AGENT:-CyberFateResearchBot/0.1 (+local self-hosted research; respects publisher rights)}"
+      WEB_RESEARCH_COPYRIGHT_NOTICE: "${WEB_RESEARCH_COPYRIGHT_NOTICE:-联网资料仅用于摘要、事实核对与来源引用；报告不得大段复制网页原文，请遵守原网站版权与使用条款。}"
+      SEARXNG_BASE_URL: "${SEARXNG_BASE_URL:-http://searxng:8080}"
+      SEARXNG_SEARCH_LANGUAGE: "${SEARXNG_SEARCH_LANGUAGE:-zh-CN}"
       OPENAI_VECTOR_STORE_ID: "${OPENAI_VECTOR_STORE_ID:-}"
       PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
       PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: "${PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH:-}"
       HTTP_PROXY: "${HTTP_PROXY:-}"
       HTTPS_PROXY: "${HTTPS_PROXY:-}"
-      NO_PROXY: "${NO_PROXY:-localhost,127.0.0.1,::1}"
+      NO_PROXY: "${NO_PROXY:-localhost,127.0.0.1,::1,postgres,searxng}"
       http_proxy: "${http_proxy:-}"
       https_proxy: "${https_proxy:-}"
-      no_proxy: "${no_proxy:-localhost,127.0.0.1,::1}"
+      no_proxy: "${no_proxy:-localhost,127.0.0.1,::1,postgres,searxng}"
     volumes:
       - cyber_fate_reports:/app/.cyber-fate-data
+    depends_on:
+      - postgres
+      - searxng
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
 
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:-cyber_fate}"
+      POSTGRES_USER: "${POSTGRES_USER:-cyber_fate}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-cyber_fate_local}"
+    volumes:
+      - cyber_fate_postgres:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  searxng:
+    image: searxng/searxng:latest
+    ports:
+      - "${SEARXNG_PORT:-8080}:8080"
+    volumes:
+      - ./searxng:/etc/searxng
+    environment:
+      SEARXNG_BASE_URL: "${SEARXNG_PUBLIC_URL:-http://localhost:${SEARXNG_PORT:-8080}/}"
+      HTTP_PROXY: "${HTTP_PROXY:-}"
+      HTTPS_PROXY: "${HTTPS_PROXY:-}"
+      NO_PROXY: "${NO_PROXY:-localhost,127.0.0.1,::1,postgres,searxng}"
+      http_proxy: "${http_proxy:-}"
+      https_proxy: "${https_proxy:-}"
+      no_proxy: "${no_proxy:-localhost,127.0.0.1,::1,postgres,searxng}"
+    restart: unless-stopped
+
 volumes:
   cyber_fate_reports:
+  cyber_fate_postgres:
