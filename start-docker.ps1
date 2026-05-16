@@ -2,7 +2,8 @@ param(
   [int] $Port = 3000,
   [string] $Proxy = "",
   [int] $WaitSeconds = 180,
-  [switch] $UbuntuBase
+  [switch] $UbuntuBase,
+  [switch] $DisableWebSearch
 )
 
 $ErrorActionPreference = "Stop"
@@ -84,6 +85,66 @@ if ($UbuntuBase) {
   $env:DOCKERFILE = "Dockerfile"
 }
 
+function Set-EnvDefault {
+  param(
+    [string] $Name,
+    [string] $Value
+  )
+
+  if (-not [Environment]::GetEnvironmentVariable($Name, "Process")) {
+    [Environment]::SetEnvironmentVariable($Name, $Value, "Process")
+  }
+}
+
+function Add-NoProxyHosts {
+  param([string[]] $Hosts)
+
+  foreach ($name in @("NO_PROXY", "no_proxy")) {
+    $current = [Environment]::GetEnvironmentVariable($name, "Process")
+    if ([string]::IsNullOrWhiteSpace($current)) {
+      $current = "localhost,127.0.0.1,::1"
+    }
+
+    $items = @($current.Split(",") | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    foreach ($hostName in $Hosts) {
+      if ($items -notcontains $hostName) {
+        $items += $hostName
+      }
+    }
+    [Environment]::SetEnvironmentVariable($name, ($items -join ","), "Process")
+  }
+}
+
+function Use-DockerResearchDefaults {
+  if ($DisableWebSearch) {
+    $env:ENABLE_WEB_SEARCH = "false"
+    return
+  }
+
+  if (-not $InitialEnvNames.ContainsKey("ENABLE_WEB_SEARCH")) {
+    $env:ENABLE_WEB_SEARCH = "true"
+  }
+
+  Set-EnvDefault "WEB_RESEARCH_PROVIDER" "searxng"
+
+  if (-not $InitialEnvNames.ContainsKey("SEARXNG_BASE_URL")) {
+    $env:SEARXNG_BASE_URL = "http://searxng:8080"
+  }
+
+  if (-not $InitialEnvNames.ContainsKey("DATABASE_URL") -and
+      ($env:DATABASE_URL -match "@(127\.0\.0\.1|localhost):" -or
+       [string]::IsNullOrWhiteSpace($env:DATABASE_URL))) {
+    $dbName = if ($env:POSTGRES_DB) { $env:POSTGRES_DB } else { "cyber_fate" }
+    $dbUser = if ($env:POSTGRES_USER) { $env:POSTGRES_USER } else { "cyber_fate" }
+    $dbPassword = if ($env:POSTGRES_PASSWORD) { $env:POSTGRES_PASSWORD } else { "cyber_fate_local" }
+    $env:DATABASE_URL = "postgresql://${dbUser}:${dbPassword}@postgres:5432/${dbName}"
+  }
+
+  Add-NoProxyHosts @("postgres", "searxng")
+}
+
+Use-DockerResearchDefaults
+
 function Convert-LocalProxyForDockerBuild {
   param([string] $ProxyUrl)
 
@@ -111,11 +172,12 @@ if ($Proxy) {
   $env:http_proxy = $dockerBuildProxy
   $env:https_proxy = $dockerBuildProxy
   if (-not $env:NO_PROXY) {
-    $env:NO_PROXY = "localhost,127.0.0.1,::1"
+    $env:NO_PROXY = "localhost,127.0.0.1,::1,postgres,searxng"
   }
   if (-not $env:no_proxy) {
     $env:no_proxy = $env:NO_PROXY
   }
+  Add-NoProxyHosts @("postgres", "searxng")
 }
 
 function Test-DockerEngine {
@@ -234,8 +296,13 @@ function Assert-ProxyConfiguration {
 }
 
 Write-Host "Starting Cyber Fate on http://localhost:$Port"
-Write-Host "Press Ctrl+C to stop. Reports are stored in the Docker volume cyber_fate_reports."
+Write-Host "Press Ctrl+C to stop. Reports are stored in cyber_fate_reports; Postgres data/cache in cyber_fate_postgres."
 Write-Host "Dockerfile: $env:DOCKERFILE"
+Write-Host "Docker stack: app + postgres + searxng"
+Write-Host "Web research: $env:ENABLE_WEB_SEARCH"
+if ($env:ENABLE_WEB_SEARCH -eq "true") {
+  Write-Host "SearXNG inside Docker: $env:SEARXNG_BASE_URL"
+}
 if ($env:HTTP_PROXY) {
   if ($env:CYBER_FATE_LOCAL_PROXY) {
     Write-Host "Local proxy: $env:CYBER_FATE_LOCAL_PROXY"

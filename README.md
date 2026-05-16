@@ -82,6 +82,8 @@ Set-ExecutionPolicy -Scope Process Bypass
 start-docker.cmd
 ```
 
+Docker 启动已经接入本仓库根目录的 `compose.yaml`，不是独立 demo。`.\start-docker.ps1` 会同时启动 `app`、`postgres`、`searxng`，默认把 `ENABLE_WEB_SEARCH=true` 打开，并把容器内搜索地址指向 `http://searxng:8080`。只有明确不需要自托管搜索时才使用 `.\start-docker.ps1 -DisableWebSearch`。
+
 启动后打开：
 
 ```text

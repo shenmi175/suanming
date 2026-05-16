@@ -261,7 +261,7 @@ F:\project\suanming\cyber-fate-dev\.env.local</code></pre>
             <tr><td><code>FRONTEND_ORIGIN</code></td><td>backend 默认允许的前端 Origin。</td><td><code>http://localhost:3000</code></td></tr>
             <tr><td><code>BACKEND_CORS_ORIGINS</code></td><td>逗号分隔的 CORS allowlist；留空时允许 <code>FRONTEND_ORIGIN</code> 和当前 <code>FRONTEND_PORT</code> 的 localhost/127.0.0.1。</td><td>空</td></tr>
             <tr><td><code>DATABASE_URL</code></td><td>PostgreSQL 连接串；配置后报告与搜索缓存写入数据库。</td><td>空</td></tr>
-            <tr><td><code>ENABLE_WEB_SEARCH</code></td><td>开启联网资料研究。</td><td><code>false</code></td></tr>
+            <tr><td><code>ENABLE_WEB_SEARCH</code></td><td>开启联网资料研究。Docker 启动默认开启；纯本地无 SearXNG/Postgres 时可关闭。</td><td><code>true</code></td></tr>
             <tr><td><code>SEARXNG_BASE_URL</code></td><td>自托管 SearXNG 地址；Docker 内默认 <code>http://searxng:8080</code>，本机默认 <code>http://localhost:8080</code>。</td><td><code>http://localhost:8080</code></td></tr>
             <tr><td><code>PERCEPTLEAP_API_KEY</code></td><td>本地明文 PerceptLeap key。</td><td>空</td></tr>
             <tr><td><code>PERCEPTLEAP_API_KEY_ENCRYPTED</code></td><td>加密 PerceptLeap key，优先于明文。</td><td>空</td></tr>

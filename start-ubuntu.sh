@@ -8,6 +8,7 @@ NPM_REGISTRY="${NPM_REGISTRY:-}"
 APT_MIRROR="${APT_MIRROR:-https://mirrors.aliyun.com/ubuntu}"
 FIX_APT_SOURCES="${FIX_APT_SOURCES:-1}"
 INSTALL_BROWSER=1
+START_RESEARCH_STACK="${START_RESEARCH_STACK:-1}"
 
 usage() {
   cat <<'EOF'
@@ -24,6 +25,7 @@ Options:
   --no-fix-apt-sources      Do not rewrite broken Ubuntu apt sources when apt-get update fails
   --dev                     Run Next.js dev server instead of production build/start
   --skip-browser            Skip Playwright Chromium installation
+  --no-research-stack       Do not auto-start Postgres/SearXNG when ENABLE_WEB_SEARCH=true
   -h, --help                Show this help
 
 Examples:
@@ -63,6 +65,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --skip-browser)
       INSTALL_BROWSER=0
+      shift
+      ;;
+    --no-research-stack)
+      START_RESEARCH_STACK=0
       shift
       ;;
     -h|--help)
@@ -144,7 +150,7 @@ if [[ -n "$PROXY" ]]; then
   export HTTPS_PROXY="$PROXY"
   export http_proxy="$PROXY"
   export https_proxy="$PROXY"
-  export NO_PROXY="${NO_PROXY:-localhost,127.0.0.1,::1}"
+  export NO_PROXY="${NO_PROXY:-localhost,127.0.0.1,::1,postgres,searxng}"
   export no_proxy="${no_proxy:-$NO_PROXY}"
 fi
 
@@ -156,6 +162,56 @@ fi
 
 need_command() {
   command -v "$1" >/dev/null 2>&1
+}
+
+is_truthy() {
+  case "${1:-}" in
+    1|true|TRUE|yes|YES|on|ON) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+append_no_proxy_hosts() {
+  local host current
+  current="${NO_PROXY:-localhost,127.0.0.1,::1}"
+  for host in "$@"; do
+    if [[ ",$current," != *",$host,"* ]]; then
+      current="$current,$host"
+    fi
+  done
+  export NO_PROXY="$current"
+  export no_proxy="${no_proxy:-$NO_PROXY}"
+}
+
+configure_research_stack() {
+  append_no_proxy_hosts postgres searxng
+
+  if ! is_truthy "${ENABLE_WEB_SEARCH:-false}"; then
+    return
+  fi
+
+  if [[ "$START_RESEARCH_STACK" != "1" ]]; then
+    echo "Web research is enabled. Expecting external Postgres/SearXNG because --no-research-stack was used."
+    return
+  fi
+
+  if ! need_command docker; then
+    echo "ENABLE_WEB_SEARCH=true, but Docker is not installed. Disabling web research for this run."
+    export ENABLE_WEB_SEARCH=false
+    return
+  fi
+
+  if ! docker info >/dev/null 2>&1; then
+    echo "ENABLE_WEB_SEARCH=true, but Docker Engine is not running. Disabling web research for this run."
+    export ENABLE_WEB_SEARCH=false
+    return
+  fi
+
+  echo "Starting self-hosted research services: postgres + searxng"
+  (cd "$ROOT_DIR" && docker compose up -d postgres searxng)
+
+  export DATABASE_URL="${DATABASE_URL:-postgresql://${POSTGRES_USER:-cyber_fate}:${POSTGRES_PASSWORD:-cyber_fate_local}@127.0.0.1:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-cyber_fate}}"
+  export SEARXNG_BASE_URL="${SEARXNG_BASE_URL:-http://127.0.0.1:${SEARXNG_PORT:-8080}}"
 }
 
 ubuntu_codename() {
@@ -329,7 +385,13 @@ if [[ "$FIX_APT_SOURCES" == "1" ]]; then
 else
   echo "APT source repair: disabled"
 fi
+if is_truthy "${ENABLE_WEB_SEARCH:-false}"; then
+  echo "Web research: enabled"
+else
+  echo "Web research: disabled"
+fi
 
+configure_research_stack
 install_node_if_needed
 configure_npm
 install_pnpm_if_needed

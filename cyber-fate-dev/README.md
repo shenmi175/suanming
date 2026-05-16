@@ -83,6 +83,8 @@ Set-ExecutionPolicy -Scope Process Bypass
 docker compose up --build
 ```
 
+Docker 启动走仓库根目录 `compose.yaml`，会同时拉起 `app`、`postgres`、`searxng`，并默认启用 `ENABLE_WEB_SEARCH=true`。容器内后端会访问 `http://searxng:8080`，不是另跑一套独立搜索项目。
+
 启动后访问：
 
 ```text
@@ -208,7 +210,7 @@ ENABLE_PERCEPTLEAP=true
 ENABLE_PERCEPTLEAP_IMAGE=false
 GENERATE_REPORT_IMAGE=false
 PERCEPTLEAP_PROXY_URL=
-ENABLE_WEB_SEARCH=false
+ENABLE_WEB_SEARCH=true
 WEB_RESEARCH_PROVIDER=searxng
 WEB_RESEARCH_REQUIRED=false
 WEB_RESEARCH_MIN_SOURCES=2
